@@ -6,14 +6,18 @@ CREATE TABLE Employer(
     id_departement VARCHAR(30),
     FOREIGN KEY fk_departement(id_departement) REFERENCES Departement(Intituler));
 CREATE TABLE Departement(
-	Intituler VARCHAR(30) PRIMARY KEY);
+	Intituler VARCHAR(30) PRIMARY KEY,
+	Chef_departement VARCHAR(30),
+    FOREIGN KEY fk_employer(Chef_departement) REFERENCES Employer(Id));
 CREATE TABLE Fiche_de_paie(
 	Mois DATE PRIMARY KEY,
     Id_employer VARCHAR(30) PRIMARY KEY,
     FOREIGN KEY fk_employer(Id_employer) REFERENCES Employer(Id));
 CREATE TABLE Projet(
 	Etat_projet VARCHAR(30),
+	Chef_projet VARCHAR(30),
     id_departement VARCHAR(30),
+    FOREIGN KEY fk_employer(Chef_projet) REFERENCES Employer(Id),
     FOREIGN KEY fk_departement(id_departement) REFERENCES Departement(Intituler));
 CREATE TABLE Affectation_projet(
     Id_employer VARCHAR(30) PRIMARY KEY,
