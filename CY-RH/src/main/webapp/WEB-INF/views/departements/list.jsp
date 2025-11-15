@@ -15,9 +15,11 @@
         
         <!-- Bouton pour ajouter un département -->
         <div class="action-bar">
-            <a href="${pageContext.request.contextPath}/departements/new" class="btn btn-primary">
-                Ajouter un département
-            </a>
+            <c:if test="${sessionScope.userRole == 'ADMIN'}">
+                <a href="${pageContext.request.contextPath}/departements/new" class="btn btn-primary">
+                    Ajouter un département
+                </a>
+            </c:if>
         </div>
         
         <!-- Message d'erreur -->
@@ -51,7 +53,7 @@
                                 <td>
                                     <c:choose>
                                         <c:when test="${dept.chefDepartement != null}">
-                                            ID: ${dept.chefDepartement}
+                                            ${dept.chefDepartement.prenom} ${dept.chefDepartement.nom}
                                         </c:when>
                                         <c:otherwise>
                                             <em>Non défini</em>
@@ -64,12 +66,19 @@
                                     </a>
                                 </td>
                                 <td class="actions">
-                                    <a href="${pageContext.request.contextPath}/departements/edit?id=${dept.id}" class="btn-edit">Modifier</a>
-                                    <a href="${pageContext.request.contextPath}/departements/delete?id=${dept.id}" 
-                                       class="btn-delete" 
-                                       onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce département ?')">
-                                       Supprimer
-                                    </a>
+                                    <c:choose>
+                                        <c:when test="${sessionScope.userRole == 'ADMIN'}">
+                                            <a href="${pageContext.request.contextPath}/departements/edit?id=${dept.id}" class="btn-edit">Modifier</a>
+                                            <a href="${pageContext.request.contextPath}/departements/delete?id=${dept.id}"
+                                               class="btn-delete"
+                                               onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce département ?')">
+                                               Supprimer
+                                            </a>
+                                        </c:when>
+                                        <c:when test="${sessionScope.userRole == 'CHEF_DEPT' && dept.chefDepartement != null && dept.chefDepartement.id == sessionScope.userId}">
+                                            <a href="${pageContext.request.contextPath}/departements/edit?id=${dept.id}" class="btn-edit">Modifier mon département</a>
+                                        </c:when>
+                                    </c:choose>
                                 </td>
                             </tr>
                         </c:forEach>

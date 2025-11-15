@@ -126,4 +126,20 @@ public class ProjetDAO {
             return null;
         }
     }
+    
+    /**
+     * Récupérer les projets où l'employé est chef de projet
+     * NOUVELLE MÉTHODE pour les chefs de projet
+     */
+    public List<Projet> getByChefProjet(Integer chefProjetId) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "FROM Projet WHERE chefProjet = :chefId";
+            Query<Projet> query = session.createQuery(hql, Projet.class);
+            query.setParameter("chefId", chefProjetId);
+            return query.list();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }

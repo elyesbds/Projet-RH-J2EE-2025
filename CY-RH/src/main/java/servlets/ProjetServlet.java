@@ -8,6 +8,7 @@ import models.Projet;
 import models.Employer;
 import models.Departement;
 import models.AffectationProjet;
+import utils.PermissionUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -63,6 +64,9 @@ public class ProjetServlet extends HttpServlet {
         } else if (action.equals("/retirerEmploye")) {
             // Retirer un employé du projet
             retirerEmploye(request, response);
+        } else if (action.equals("/affectation-rapide")) {
+            // Affectation rapide depuis la liste des employés
+            showAffectationRapide(request, response);
         }
     }
     
@@ -86,20 +90,113 @@ public class ProjetServlet extends HttpServlet {
     
     /**
      * Lister tous les projets
+     * - EMPLOYE : voit seulement SES projets (où il est affecté)
+     * - CHEF_PROJET : voit UNIQUEMENT SES projets (où il est chef)
+     * - CHEF_DEPT et ADMIN : voient TOUS les projets
      */
     private void listProjets(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
-        List<Projet> projets = projetDAO.getAll();
+        List<Projet> projets;
+        Employer currentUser = PermissionUtil.getLoggedUser(request);
+        
+        if (currentUser == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+        
+        // EMPLOYÉ SIMPLE : afficher seulement SES projets (où il est affecté)
+        if ("EMPLOYE".equals(currentUser.getRole())) {
+            Integer userId = currentUser.getId();
+            List<AffectationProjet> affectations = affectationDAO.getProjetsByEmployer(userId);
+            
+            projets = new ArrayList<>();
+            if (affectations != null) {
+                for (AffectationProjet aff : affectations) {
+                    Projet p = projetDAO.getById(aff.getIdProjet());
+                    if (p != null) {
+                        projets.add(p);
+                    }
+                }
+            }
+        } 
+     // CHEF DE PROJET : voit SES projets (chef) + projets où il est MEMBRE
+        else if ("CHEF_PROJET".equals(currentUser.getRole())) {
+            Integer userId = currentUser.getId();
+            
+            // 1. Projets où il est CHEF
+            List<Projet> projetsChef = projetDAO.getByChefProjet(userId);
+            projets = new ArrayList<>(projetsChef != null ? projetsChef : new ArrayList<>());
+            
+            // 2. Projets où il est MEMBRE (affecté)
+            List<AffectationProjet> affectations = affectationDAO.getProjetsByEmployer(userId);
+            if (affectations != null) {
+                for (AffectationProjet aff : affectations) {
+                    Projet p = projetDAO.getById(aff.getIdProjet());
+                    // Ajouter seulement si pas déjà dans la liste
+                    if (p != null && !projets.contains(p)) {
+                        projets.add(p);
+                    }
+                }
+            }
+        }
+     // CHEF DEPT : voit les projets de son département + projets où il est membre
+        else if ("CHEF_DEPT".equals(currentUser.getRole())) {
+            projets = new ArrayList<>();
+            
+            // 1. Projets du département
+            if (currentUser.getIdDepartement() != null) {
+                List<Projet> projetsDept = projetDAO.getByDepartement(currentUser.getIdDepartement());
+                if (projetsDept != null) {
+                    projets.addAll(projetsDept);
+                }
+            }
+            
+            // 2. Projets où il est membre
+            List<AffectationProjet> affectations = affectationDAO.getProjetsByEmployer(currentUser.getId());
+            if (affectations != null) {
+                for (AffectationProjet aff : affectations) {
+                    Projet p = projetDAO.getById(aff.getIdProjet());
+                    if (p != null && !projets.contains(p)) {
+                        projets.add(p);
+                    }
+                }
+            }
+        }
+        // ADMIN : TOUS les projets
+        else {
+            projets = projetDAO.getAll();
+        }
+        
+        // Récupérer les noms des chefs de projet
+        Map<Integer, String> chefsProjetMap = new HashMap<>();
+        if (projets != null) {
+            for (Projet projet : projets) {
+                if (projet.getChefProjet() != null) {
+                    Employer chef = employerDAO.getById(projet.getChefProjet());
+                    if (chef != null) {
+                        chefsProjetMap.put(projet.getId(), chef.getPrenom() + " " + chef.getNom());
+                    }
+                }
+            }
+        }
+        
         request.setAttribute("projets", projets);
+        request.setAttribute("chefsProjetMap", chefsProjetMap);
         request.getRequestDispatcher("/WEB-INF/views/projets/list.jsp").forward(request, response);
     }
     
     /**
      * Afficher le formulaire de création
+     * Seul l'admin peut créer des projets
      */
     private void showNewForm(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
+        
+        if (!PermissionUtil.isAdmin(request)) {
+            response.sendRedirect(request.getContextPath() + "/projets");
+            return;
+        }
         
         List<Employer> employees = employerDAO.getAll();
         List<Departement> departements = departementDAO.getAll();
@@ -111,29 +208,53 @@ public class ProjetServlet extends HttpServlet {
     
     /**
      * Afficher le formulaire de modification
+     * Admin OU chef de ce projet peuvent modifier
      */
     private void showEditForm(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
         int id = Integer.parseInt(request.getParameter("id"));
         Projet projet = projetDAO.getById(id);
+        Employer currentUser = PermissionUtil.getLoggedUser(request);
+        
+        // Vérifier permission : Admin OU chef de ce projet
+        boolean canModify = PermissionUtil.isAdmin(request) || 
+                           (currentUser != null && projet.getChefProjet() != null && 
+                            projet.getChefProjet().equals(currentUser.getId()));
+        
+        if (!canModify) {
+            response.sendRedirect(request.getContextPath() + "/projets");
+            return;
+        }
+        
         List<Employer> employees = employerDAO.getAll();
         List<Departement> departements = departementDAO.getAll();
+        
+        // Indiquer si c'est un chef de projet (pour limiter les champs modifiables)
+        boolean isChefProjet = currentUser != null && "CHEF_PROJET".equals(currentUser.getRole());
         
         request.setAttribute("projet", projet);
         request.setAttribute("employees", employees);
         request.setAttribute("departements", departements);
+        request.setAttribute("isChefProjet", isChefProjet);
         request.getRequestDispatcher("/WEB-INF/views/projets/form.jsp").forward(request, response);
     }
     
     /**
      * Créer un nouveau projet
+     * Seul l'admin peut créer
      */
     private void createProjet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
+        if (!PermissionUtil.isAdmin(request)) {
+            response.sendRedirect(request.getContextPath() + "/projets");
+            return;
+        }
+        
         String nomProjet = request.getParameter("nomProjet");
         
+        // Validation
         if (nomProjet == null || nomProjet.trim().isEmpty()) {
             request.setAttribute("error", "Le nom du projet est obligatoire");
             showNewForm(request, response);
@@ -143,7 +264,13 @@ public class ProjetServlet extends HttpServlet {
         try {
             Projet projet = new Projet();
             projet.setNomProjet(nomProjet.trim());
-            projet.setEtatProjet(request.getParameter("etatProjet"));
+            
+            String etat = request.getParameter("etatProjet");
+            if (etat != null && !etat.trim().isEmpty()) {
+                projet.setEtatProjet(etat);
+            } else {
+                projet.setEtatProjet("EN_COURS");
+            }
             
             // Dates
             String dateDebutStr = request.getParameter("dateDebut");
@@ -173,6 +300,7 @@ public class ProjetServlet extends HttpServlet {
             boolean success = projetDAO.create(projet);
             
             if (success) {
+                request.getSession().setAttribute("successMessage", "✅ Projet créé avec succès !");
                 response.sendRedirect(request.getContextPath() + "/projets");
             } else {
                 request.setAttribute("error", "Erreur lors de la création du projet");
@@ -187,6 +315,8 @@ public class ProjetServlet extends HttpServlet {
     
     /**
      * Mettre à jour un projet
+     * Admin : peut tout modifier
+     * Chef de projet : peut modifier SEULEMENT certains champs (état, date fin prévue, date fin réelle)
      */
     private void updateProjet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
@@ -200,43 +330,84 @@ public class ProjetServlet extends HttpServlet {
                 return;
             }
             
-            // Mise à jour
-            projet.setNomProjet(request.getParameter("nomProjet"));
-            projet.setEtatProjet(request.getParameter("etatProjet"));
+            Employer currentUser = PermissionUtil.getLoggedUser(request);
             
-            String dateDebutStr = request.getParameter("dateDebut");
-            if (dateDebutStr != null && !dateDebutStr.trim().isEmpty()) {
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                projet.setDateDebut(sdf.parse(dateDebutStr));
+            // Vérifier permission : Admin OU chef de ce projet
+            boolean isAdmin = PermissionUtil.isAdmin(request);
+            boolean isChefOfThisProjet = (currentUser != null && projet.getChefProjet() != null && 
+                                         projet.getChefProjet().equals(currentUser.getId()));
+            
+            if (!isAdmin && !isChefOfThisProjet) {
+                response.sendRedirect(request.getContextPath() + "/projets");
+                return;
             }
             
-            String dateFinPrevueStr = request.getParameter("dateFinPrevue");
-            if (dateFinPrevueStr != null && !dateFinPrevueStr.trim().isEmpty()) {
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                projet.setDateFinPrevue(sdf.parse(dateFinPrevueStr));
-            }
-            
-            String dateFinReelleStr = request.getParameter("dateFinReelle");
-            if (dateFinReelleStr != null && !dateFinReelleStr.trim().isEmpty()) {
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                projet.setDateFinReelle(sdf.parse(dateFinReelleStr));
-            } else {
-                projet.setDateFinReelle(null);
-            }
-            
-            String chefStr = request.getParameter("chefProjet");
-            if (chefStr != null && !chefStr.trim().isEmpty()) {
-                projet.setChefProjet(Integer.parseInt(chefStr));
-            }
-            
-            String deptStr = request.getParameter("idDepartement");
-            if (deptStr != null && !deptStr.trim().isEmpty()) {
-                projet.setIdDepartement(Integer.parseInt(deptStr));
+            // ADMIN : peut tout modifier
+            if (isAdmin) {
+                projet.setNomProjet(request.getParameter("nomProjet"));
+                projet.setEtatProjet(request.getParameter("etatProjet"));
+                
+                String dateDebutStr = request.getParameter("dateDebut");
+                if (dateDebutStr != null && !dateDebutStr.trim().isEmpty()) {
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                    projet.setDateDebut(sdf.parse(dateDebutStr));
+                }
+                
+                String dateFinPrevueStr = request.getParameter("dateFinPrevue");
+                if (dateFinPrevueStr != null && !dateFinPrevueStr.trim().isEmpty()) {
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                    projet.setDateFinPrevue(sdf.parse(dateFinPrevueStr));
+                }
+                
+                String dateFinReelleStr = request.getParameter("dateFinReelle");
+                if (dateFinReelleStr != null && !dateFinReelleStr.trim().isEmpty()) {
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                    projet.setDateFinReelle(sdf.parse(dateFinReelleStr));
+                } else {
+                    projet.setDateFinReelle(null);
+                }
+                
+                String chefStr = request.getParameter("chefProjet");
+                if (chefStr != null && !chefStr.trim().isEmpty()) {
+                    projet.setChefProjet(Integer.parseInt(chefStr));
+                }
+                
+                String deptStr = request.getParameter("idDepartement");
+                if (deptStr != null && !deptStr.trim().isEmpty()) {
+                    projet.setIdDepartement(Integer.parseInt(deptStr));
+                }
+            } 
+            // CHEF DE PROJET : peut modifier SEULEMENT état, date fin prévue, date fin réelle
+            else if (isChefOfThisProjet) {
+                // Modifier l'état du projet
+                String etat = request.getParameter("etatProjet");
+                if (etat != null && !etat.trim().isEmpty()) {
+                    projet.setEtatProjet(etat);
+                }
+                
+                // Modifier la date de fin prévue
+                String dateFinPrevueStr = request.getParameter("dateFinPrevue");
+                if (dateFinPrevueStr != null && !dateFinPrevueStr.trim().isEmpty()) {
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                    projet.setDateFinPrevue(sdf.parse(dateFinPrevueStr));
+                }
+                
+                // Modifier la date de fin réelle
+                String dateFinReelleStr = request.getParameter("dateFinReelle");
+                if (dateFinReelleStr != null && !dateFinReelleStr.trim().isEmpty()) {
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                    projet.setDateFinReelle(sdf.parse(dateFinReelleStr));
+                } else {
+                    projet.setDateFinReelle(null);
+                }
+                
+                // NE PAS modifier : nom, date début, chef, département
             }
             
             boolean success = projetDAO.update(projet);
             
             if (success) {
+                request.getSession().setAttribute("successMessage", "✅ Projet mis à jour avec succès !");
                 response.sendRedirect(request.getContextPath() + "/projets");
             } else {
                 request.setAttribute("error", "Erreur lors de la mise à jour");
@@ -251,23 +422,32 @@ public class ProjetServlet extends HttpServlet {
     
     /**
      * Supprimer un projet
+     * Seul l'admin peut supprimer
      */
     private void deleteProjet(HttpServletRequest request, HttpServletResponse response) 
             throws IOException {
         
+        if (!PermissionUtil.isAdmin(request)) {
+            response.sendRedirect(request.getContextPath() + "/projets");
+            return;
+        }
+        
         int id = Integer.parseInt(request.getParameter("id"));
         projetDAO.delete(id);
+        request.getSession().setAttribute("successMessage", "✅ Projet supprimé avec succès !");
         response.sendRedirect(request.getContextPath() + "/projets");
     }
     
     /**
      * Afficher l'équipe du projet
+     * Tout le monde peut voir, mais seuls Admin et Chef de ce projet peuvent modifier
      */
     private void showEquipe(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
         int projetId = Integer.parseInt(request.getParameter("id"));
         Projet projet = projetDAO.getById(projetId);
+        Employer currentUser = PermissionUtil.getLoggedUser(request);
         
         // Récupérer les affectations
         List<AffectationProjet> affectations = affectationDAO.getEmployersByProjet(projetId);
@@ -289,28 +469,60 @@ public class ProjetServlet extends HttpServlet {
             chef = employerDAO.getById(projet.getChefProjet());
         }
         
+        // Vérifier si l'utilisateur peut modifier (Admin OU chef de ce projet)
+        boolean canModify = PermissionUtil.isAdmin(request) || 
+                           (currentUser != null && projet.getChefProjet() != null && 
+                            projet.getChefProjet().equals(currentUser.getId()));
+        
         request.setAttribute("projet", projet);
         request.setAttribute("affectations", affectations);
         request.setAttribute("employesMap", employesMap);
         request.setAttribute("chef", chef);
+        request.setAttribute("canModify", canModify);
         request.getRequestDispatcher("/WEB-INF/views/projets/equipe.jsp").forward(request, response);
     }
     
     /**
      * Afficher le formulaire d'affectation
+     * Admin OU chef de ce projet peuvent affecter
      */
     private void showAffectationForm(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
         int projetId = Integer.parseInt(request.getParameter("id"));
         Projet projet = projetDAO.getById(projetId);
+        Employer currentUser = PermissionUtil.getLoggedUser(request);
+        
+        // Vérifier permission : Admin OU chef de ce projet
+        boolean canAffect = PermissionUtil.isAdmin(request) || 
+                           (currentUser != null && projet.getChefProjet() != null && 
+                            projet.getChefProjet().equals(currentUser.getId()));
+        
+        if (!canAffect) {
+            response.sendRedirect(request.getContextPath() + "/projets");
+            return;
+        }
+        
+
+        
+        // Vérifier que le projet est EN_COURS
+        if (!"EN_COURS".equals(projet.getEtatProjet())) {
+            request.getSession().setAttribute("errorMessage", "❌ Impossible d'affecter un employé à un projet terminé ou annulé.");
+            response.sendRedirect(request.getContextPath() + "/projets/equipe?id=" + projetId);
+            return;
+        }
+        
         List<Employer> tousEmployes = employerDAO.getAll();
         
-        // Filtrer les employés déjà affectés
+        // Filtrer les employés déjà affectés + le chef de projet (qui ne doit pas être dans affectations)
         List<Employer> employesDisponibles = new ArrayList<>();
         if (tousEmployes != null) {
             for (Employer emp : tousEmployes) {
-                if (!affectationDAO.isEmployerAffected(emp.getId(), projetId)) {
+                // Ne pas afficher : employés déjà affectés OU le chef de projet
+                boolean estChef = (projet.getChefProjet() != null && projet.getChefProjet().equals(emp.getId()));
+                boolean dejaAffecte = affectationDAO.isEmployerAffected(emp.getId(), projetId);
+                
+                if (!estChef && !dejaAffecte) {
                     employesDisponibles.add(emp);
                 }
             }
@@ -323,6 +535,8 @@ public class ProjetServlet extends HttpServlet {
     
     /**
      * Affecter un employé au projet
+     * Admin OU chef de ce projet peuvent affecter
+     * NOUVEAU : Gère aussi l'affectation rapide depuis la liste des employés
      */
     private void affecterEmploye(HttpServletRequest request, HttpServletResponse response) 
             throws IOException {
@@ -331,13 +545,37 @@ public class ProjetServlet extends HttpServlet {
             int projetId = Integer.parseInt(request.getParameter("projetId"));
             int employeId = Integer.parseInt(request.getParameter("employeId"));
             
+            Projet projet = projetDAO.getById(projetId);
+            Employer currentUser = PermissionUtil.getLoggedUser(request);
+            
+            // Vérifier permission : Admin OU chef de ce projet
+            boolean canAffect = PermissionUtil.isAdmin(request) || 
+                               (currentUser != null && projet.getChefProjet() != null && 
+                                projet.getChefProjet().equals(currentUser.getId()));
+            
+            if (!canAffect) {
+                response.sendRedirect(request.getContextPath() + "/projets");
+                return;
+            }
+            
+            // Créer l'affectation
             AffectationProjet affectation = new AffectationProjet();
             affectation.setIdProjet(projetId);
             affectation.setIdEmployer(employeId);
             affectation.setDateAffectation(new Date());
             
             affectationDAO.create(affectation);
-            response.sendRedirect(request.getContextPath() + "/projets/equipe?id=" + projetId);
+            request.getSession().setAttribute("successMessage", "✅ Employé affecté au projet avec succès !");
+            
+            // Redirection intelligente selon la provenance
+            String fromRapide = request.getParameter("fromRapide");
+            if ("true".equals(fromRapide)) {
+                // Si affectation rapide : retour à la liste des employés
+                response.sendRedirect(request.getContextPath() + "/employees");
+            } else {
+                // Sinon : retour à l'équipe du projet
+                response.sendRedirect(request.getContextPath() + "/projets/equipe?id=" + projetId);
+            }
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -347,6 +585,7 @@ public class ProjetServlet extends HttpServlet {
     
     /**
      * Retirer un employé du projet
+     * Admin OU chef de ce projet peuvent retirer
      */
     private void retirerEmploye(HttpServletRequest request, HttpServletResponse response) 
             throws IOException {
@@ -354,7 +593,58 @@ public class ProjetServlet extends HttpServlet {
         int affectationId = Integer.parseInt(request.getParameter("affectationId"));
         int projetId = Integer.parseInt(request.getParameter("projetId"));
         
+        Projet projet = projetDAO.getById(projetId);
+        Employer currentUser = PermissionUtil.getLoggedUser(request);
+        
+        // Vérifier permission : Admin OU chef de ce projet
+        boolean canRemove = PermissionUtil.isAdmin(request) || 
+                           (currentUser != null && projet.getChefProjet() != null && 
+                            projet.getChefProjet().equals(currentUser.getId()));
+        
+        if (!canRemove) {
+            response.sendRedirect(request.getContextPath() + "/projets");
+            return;
+        }
+        
         affectationDAO.delete(affectationId);
+        request.getSession().setAttribute("successMessage", "✅ Employé retiré du projet avec succès !");
         response.sendRedirect(request.getContextPath() + "/projets/equipe?id=" + projetId);
+    }
+    
+    /**
+     * Afficher le formulaire d'affectation rapide depuis la liste des employés
+     * Pour les chefs de projet : afficher LEURS projets uniquement
+     */
+    private void showAffectationRapide(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        
+        int employeId = Integer.parseInt(request.getParameter("employeId"));
+        Employer employe = employerDAO.getById(employeId);
+        Employer currentUser = PermissionUtil.getLoggedUser(request);
+        
+        // Vérifier que l'utilisateur est chef de projet
+        if (currentUser == null || !"CHEF_PROJET".equals(currentUser.getRole())) {
+            response.sendRedirect(request.getContextPath() + "/employees");
+            return;
+        }
+        
+        // Récupérer UNIQUEMENT les projets où l'utilisateur est chef
+        List<Projet> mesProjets = projetDAO.getByChefProjet(currentUser.getId());
+        
+        // Filtrer : UNIQUEMENT projets EN_COURS + employé non affecté
+        List<Projet> projetsDisponibles = new ArrayList<>();
+        if (mesProjets != null) {
+            for (Projet projet : mesProjets) {
+                // Vérifier : EN_COURS + pas déjà affecté
+                if ("EN_COURS".equals(projet.getEtatProjet()) && 
+                    !affectationDAO.isEmployerAffected(employeId, projet.getId())) {
+                    projetsDisponibles.add(projet);
+                }
+            }
+        }
+        
+        request.setAttribute("employe", employe);
+        request.setAttribute("projets", projetsDisponibles);
+        request.getRequestDispatcher("/WEB-INF/views/projets/affectation-rapide.jsp").forward(request, response);
     }
 }

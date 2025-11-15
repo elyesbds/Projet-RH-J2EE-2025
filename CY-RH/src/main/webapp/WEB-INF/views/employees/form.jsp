@@ -88,10 +88,11 @@
                     <label for="grade">Grade: *</label>
                     <select id="grade" name="grade" required>
                         <option value="">-- Sélectionner --</option>
-                        <option value="Junior" ${employee != null && employee.grade == 'Junior' ? 'selected' : ''}>Junior</option>
-                        <option value="Confirmé" ${employee != null && employee.grade == 'Confirmé' ? 'selected' : ''}>Confirmé</option>
-                        <option value="Senior" ${employee != null && employee.grade == 'Senior' ? 'selected' : ''}>Senior</option>
-                        <option value="Expert" ${employee != null && employee.grade == 'Expert' ? 'selected' : ''}>Expert</option>
+                        <option value="JUNIOR" ${employee != null && employee.grade == 'JUNIOR' ? 'selected' : ''}>Junior</option>
+                        <option value="CONFIRME" ${employee != null && employee.grade == 'CONFIRME' ? 'selected' : ''}>Confirmé</option>
+                        <option value="SENIOR" ${employee != null && employee.grade == 'SENIOR' ? 'selected' : ''}>Senior</option>
+                        <option value="MANAGER" ${employee != null && employee.grade == 'MANAGER' ? 'selected' : ''}>Manager</option>
+                        <option value="DIRECTEUR" ${employee != null && employee.grade == 'DIRECTEUR' ? 'selected' : ''}>Directeur</option>
                     </select>
                 </div>
             </div>
@@ -115,11 +116,16 @@
             
             <div class="form-row">
                 <div class="form-group">
-                    <label for="idDepartement">ID Département:</label>
-                    <input type="number" id="idDepartement" name="idDepartement" 
-                           value="${employee != null ? employee.idDepartement : ''}" 
-                           placeholder="Ex: 1, 2, 3...">
-                    <small>Laisser vide si aucun département</small>
+                    <label for="idDepartement">Département:</label>
+                    <select id="idDepartement" name="idDepartement">
+                        <option value="">-- Aucun --</option>
+                        <c:forEach var="dept" items="${departements}">
+                            <option value="${dept.id}" 
+                                    ${employee != null && employee.idDepartement != null && employee.idDepartement.toString() == dept.id.toString() ? 'selected' : ''}>
+                                ${dept.intitule}
+                            </option>
+                        </c:forEach>
+                    </select>
                 </div>
                 
                 <div class="form-group">

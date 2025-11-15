@@ -6,6 +6,7 @@ import dao.AffectationProjetDAO;
 import models.Employer;
 import models.Projet;
 import models.AffectationProjet;
+import utils.PermissionUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -92,6 +93,12 @@ public class EmployeeProjetsServlet extends HttpServlet {
     private void showAjouterProjetForm(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
+        // Seul l'admin peut ajouter un employé à un projet via cette page
+        if (!PermissionUtil.isAdmin(request)) {
+            response.sendRedirect(request.getContextPath() + "/employees");
+            return;
+        }
+        
         int employeeId = Integer.parseInt(request.getParameter("employeeId"));
         Employer employee = employerDAO.getById(employeeId);
         List<Projet> tousProjets = projetDAO.getAll();
@@ -117,6 +124,12 @@ public class EmployeeProjetsServlet extends HttpServlet {
     private void ajouterProjet(HttpServletRequest request, HttpServletResponse response) 
             throws IOException {
         
+        // Seul l'admin peut ajouter
+        if (!PermissionUtil.isAdmin(request)) {
+            response.sendRedirect(request.getContextPath() + "/employees");
+            return;
+        }
+        
         try {
             int employeeId = Integer.parseInt(request.getParameter("employeeId"));
             int projetId = Integer.parseInt(request.getParameter("projetId"));
@@ -140,6 +153,12 @@ public class EmployeeProjetsServlet extends HttpServlet {
      */
     private void retirerProjet(HttpServletRequest request, HttpServletResponse response) 
             throws IOException {
+        
+        // Seul l'admin peut retirer
+        if (!PermissionUtil.isAdmin(request)) {
+            response.sendRedirect(request.getContextPath() + "/employees");
+            return;
+        }
         
         int affectationId = Integer.parseInt(request.getParameter("affectationId"));
         int employeeId = Integer.parseInt(request.getParameter("employeeId"));

@@ -4,6 +4,7 @@ import dao.EmployerDAO;
 import dao.DepartementDAO;
 import models.Employer;
 import models.Departement;
+import utils.PermissionUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -13,8 +14,9 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * Servlet pour gérer toutes les opérations sur les employés
@@ -72,12 +74,33 @@ public class EmployerServlet extends HttpServlet {
     
     /**
      * Lister tous les employés
+     * Tout le monde peut voir la liste (mais seul l'admin peut modifier/supprimer)
      */
     private void listEmployees(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
         List<Employer> employees = employerDAO.getAll();
+        List<String> grades = employerDAO.getAllGrades();
+        List<String> postes = employerDAO.getAllPostes();
+        
+        // Récupérer les départements pour l'affichage
+        Map<Integer, String> departementsMap = new HashMap<>();
+        List<Departement> departements = departementDAO.getAll();
+        if (departements != null) {
+            for (Departement dept : departements) {
+                departementsMap.put(dept.getId(), dept.getIntitule());
+            }
+        }
+        
+        // Indiquer si l'utilisateur peut modifier (pour la JSP)
+        boolean canModify = PermissionUtil.isAdmin(request);
+        
         request.setAttribute("employees", employees);
+        request.setAttribute("grades", grades);
+        request.setAttribute("postes", postes);
+        request.setAttribute("departementsMap", departementsMap);
+        request.setAttribute("departements", departements);
+        request.setAttribute("canModify", canModify);
         request.getRequestDispatcher("/WEB-INF/views/employees/list.jsp").forward(request, response);
     }
     
@@ -87,9 +110,16 @@ public class EmployerServlet extends HttpServlet {
     private void showNewForm(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
-        // Récupérer la liste des départements pour le formulaire
+        // Seul l'admin peut créer des employés
+        if (!PermissionUtil.isAdmin(request)) {
+            response.sendRedirect(request.getContextPath() + "/employees");
+            return;
+        }
+        
+        // CORRECTION: Charger la liste des départements
         List<Departement> departements = departementDAO.getAll();
         request.setAttribute("departements", departements);
+        
         request.getRequestDispatcher("/WEB-INF/views/employees/form.jsp").forward(request, response);
     }
     
@@ -101,6 +131,14 @@ public class EmployerServlet extends HttpServlet {
         
         int id = Integer.parseInt(request.getParameter("id"));
         Employer employee = employerDAO.getById(id);
+        
+        // Seul l'admin peut modifier les employés
+        if (!PermissionUtil.isAdmin(request)) {
+            response.sendRedirect(request.getContextPath() + "/employees");
+            return;
+        }
+        
+        // CORRECTION: Charger la liste des départements
         List<Departement> departements = departementDAO.getAll();
         
         request.setAttribute("employee", employee);
@@ -114,11 +152,18 @@ public class EmployerServlet extends HttpServlet {
     private void createEmployee(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
-        // Validation des données
+        // Seul l'admin peut créer
+        if (!PermissionUtil.isAdmin(request)) {
+            response.sendRedirect(request.getContextPath() + "/employees");
+            return;
+        }
+        
+        // Récupération des paramètres
         String nom = request.getParameter("nom");
         String prenom = request.getParameter("prenom");
         String email = request.getParameter("email");
         
+        // Validation basique
         if (nom == null || nom.trim().isEmpty() || 
             prenom == null || prenom.trim().isEmpty() || 
             email == null || email.trim().isEmpty()) {
@@ -157,7 +202,13 @@ public class EmployerServlet extends HttpServlet {
                 employer.setIdDepartement(Integer.parseInt(deptStr));
             }
             
-            employer.setRole(request.getParameter("role"));
+            // Rôle
+            String role = request.getParameter("role");
+            if (role != null && !role.trim().isEmpty()) {
+                employer.setRole(role);
+            } else {
+                employer.setRole("EMPLOYE"); // Valeur par défaut
+            }
             
             // Sauvegarder en base
             boolean success = employerDAO.create(employer);
@@ -181,6 +232,12 @@ public class EmployerServlet extends HttpServlet {
     private void updateEmployee(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
+        // Seul l'admin peut modifier
+        if (!PermissionUtil.isAdmin(request)) {
+            response.sendRedirect(request.getContextPath() + "/employees");
+            return;
+        }
+        
         try {
             int id = Integer.parseInt(request.getParameter("id"));
             Employer employer = employerDAO.getById(id);
@@ -200,23 +257,32 @@ public class EmployerServlet extends HttpServlet {
             employer.setPoste(request.getParameter("poste"));
             employer.setGrade(request.getParameter("grade"));
             
+            // Salaire
             String salaireStr = request.getParameter("salaireBase");
             if (salaireStr != null && !salaireStr.trim().isEmpty()) {
                 employer.setSalaireBase(new BigDecimal(salaireStr));
             }
             
+            // Date
             String dateStr = request.getParameter("dateEmbauche");
             if (dateStr != null && !dateStr.trim().isEmpty()) {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
                 employer.setDateEmbauche(sdf.parse(dateStr));
             }
             
+            // Département
             String deptStr = request.getParameter("idDepartement");
             if (deptStr != null && !deptStr.trim().isEmpty()) {
                 employer.setIdDepartement(Integer.parseInt(deptStr));
+            } else {
+                employer.setIdDepartement(null);
             }
             
-            employer.setRole(request.getParameter("role"));
+            // Rôle
+            String role = request.getParameter("role");
+            if (role != null && !role.trim().isEmpty()) {
+                employer.setRole(role);
+            }
             
             // Sauvegarder
             boolean success = employerDAO.update(employer);
@@ -240,6 +306,12 @@ public class EmployerServlet extends HttpServlet {
     private void deleteEmployee(HttpServletRequest request, HttpServletResponse response) 
             throws IOException {
         
+        // Seul l'admin peut supprimer
+        if (!PermissionUtil.isAdmin(request)) {
+            response.sendRedirect(request.getContextPath() + "/employees");
+            return;
+        }
+        
         int id = Integer.parseInt(request.getParameter("id"));
         employerDAO.delete(id);
         response.sendRedirect(request.getContextPath() + "/employees");
@@ -247,6 +319,7 @@ public class EmployerServlet extends HttpServlet {
     
     /**
      * Rechercher des employés
+     * Tout le monde peut rechercher
      */
     private void searchEmployees(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
@@ -255,36 +328,33 @@ public class EmployerServlet extends HttpServlet {
         String searchValue = request.getParameter("value");
         List<Employer> employees = null;
         
+        // Utilisation de la méthode search() simplifiée
         if (searchType != null && searchValue != null && !searchValue.trim().isEmpty()) {
-            switch (searchType) {
-                case "name":
-                    employees = employerDAO.searchByName(searchValue);
-                    break;
-                case "matricule":
-                    Employer emp = employerDAO.getByMatricule(searchValue);
-                    if (emp != null) {
-                        employees = List.of(emp);
-                    }
-                    break;
-                case "grade":
-                    employees = employerDAO.getByGrade(searchValue);
-                    break;
-                case "poste":
-                    employees = employerDAO.getByPoste(searchValue);
-                    break;
-                case "departement":
-                    try {
-                        Integer deptId = Integer.parseInt(searchValue);
-                        employees = employerDAO.getByDepartement(deptId);
-                    } catch (NumberFormatException e) {
-                        // Si ce n'est pas un ID, chercher par nom de département
-                        employees = employerDAO.getByDepartementName(searchValue);
-                    }
-                    break;
+            employees = employerDAO.search(searchType, searchValue);
+        }
+        
+        // Récupérer les listes pour les filtres
+        List<String> grades = employerDAO.getAllGrades();
+        List<String> postes = employerDAO.getAllPostes();
+        
+        // Récupérer les départements pour l'affichage
+        Map<Integer, String> departementsMap = new HashMap<>();
+        List<Departement> departements = departementDAO.getAll();
+        if (departements != null) {
+            for (Departement dept : departements) {
+                departementsMap.put(dept.getId(), dept.getIntitule());
             }
         }
         
+        // Indiquer si l'utilisateur peut modifier
+        boolean canModify = PermissionUtil.isAdmin(request);
+        
         request.setAttribute("employees", employees);
+        request.setAttribute("grades", grades);
+        request.setAttribute("postes", postes);
+        request.setAttribute("departementsMap", departementsMap);
+        request.setAttribute("departements", departements);
+        request.setAttribute("canModify", canModify);
         request.setAttribute("searchType", searchType);
         request.setAttribute("searchValue", searchValue);
         request.getRequestDispatcher("/WEB-INF/views/employees/list.jsp").forward(request, response);

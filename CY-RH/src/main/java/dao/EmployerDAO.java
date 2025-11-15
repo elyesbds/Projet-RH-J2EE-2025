@@ -8,7 +8,7 @@ import utils.HibernateUtil;
 import java.util.List;
 
 /**
- * DAO pour gérer les opérations CRUD sur les employés
+ * DAO simplifié pour gérer les employés
  */
 public class EmployerDAO {
     
@@ -98,14 +98,71 @@ public class EmployerDAO {
     }
     
     /**
-     * Rechercher des employés par nom ou prénom
+     * Recherche universelle d'employés
+     * Type peut être : "nom", "matricule", "email", "grade", "poste", "departement"
      */
-    public List<Employer> searchByName(String searchTerm) {
+    public List<Employer> search(String type, String value) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            String hql = "FROM Employer WHERE LOWER(nom) LIKE :term OR LOWER(prenom) LIKE :term";
+            String hql = "";
+            boolean needsLike = false;
+            
+            // Construire la requête selon le type de recherche
+            switch (type.toLowerCase()) {
+                case "nom":
+                    // Chercher dans nom OU prénom avec CONCAT pour chercher "prenom nom" aussi
+                    hql = "FROM Employer WHERE " +
+                          "LOWER(nom) LIKE :value OR " +
+                          "LOWER(prenom) LIKE :value OR " +
+                          "LOWER(CONCAT(prenom, ' ', nom)) LIKE :value OR " +
+                          "LOWER(CONCAT(nom, ' ', prenom)) LIKE :value";
+                    needsLike = true;
+                    break;
+                case "matricule":
+                    hql = "FROM Employer WHERE matricule = :value";
+                    break;
+                case "email":
+                    hql = "FROM Employer WHERE email = :value";
+                    break;
+                case "grade":
+                    hql = "FROM Employer WHERE grade = :value";
+                    break;
+                case "poste":
+                    hql = "FROM Employer WHERE poste = :value";
+                    break;
+                case "departement":
+                    // Si c'est un nombre, recherche par ID, sinon par nom
+                    try {
+                        Integer.parseInt(value);
+                        hql = "FROM Employer WHERE idDepartement = :value";
+                    } catch (NumberFormatException e) {
+                        // Recherche par nom de département (requête SQL native)
+                        String sql = "SELECT e.* FROM Employer e " +
+                                    "JOIN Departement d ON e.Id_departement = d.Id " +
+                                    "WHERE LOWER(d.Intitule) LIKE :value";
+                        return session.createNativeQuery(sql, Employer.class)
+                                .setParameter("value", "%" + value.toLowerCase() + "%")
+                                .list();
+                    }
+                    break;
+                default:
+                    return null;
+            }
+            
+            // Exécuter la requête
             Query<Employer> query = session.createQuery(hql, Employer.class);
-            query.setParameter("term", "%" + searchTerm.toLowerCase() + "%");
+            
+            // Pour les recherches avec LIKE, ajouter les %
+            if (needsLike) {
+                query.setParameter("value", "%" + value.toLowerCase() + "%");
+            } else if (type.equalsIgnoreCase("departement")) {
+                // Pour département par ID
+                query.setParameter("value", Integer.parseInt(value));
+            } else {
+                query.setParameter("value", value);
+            }
+            
             return query.list();
+            
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -113,44 +170,14 @@ public class EmployerDAO {
     }
     
     /**
-     * Rechercher un employé par matricule
+     * Récupérer un employé par email (pour le login)
      */
-    public Employer getByMatricule(String matricule) {
+    public Employer getByEmail(String email) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            String hql = "FROM Employer WHERE matricule = :matricule";
+            String hql = "FROM Employer WHERE email = :email";
             Query<Employer> query = session.createQuery(hql, Employer.class);
-            query.setParameter("matricule", matricule);
+            query.setParameter("email", email);
             return query.uniqueResult();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-    
-    /**
-     * Récupérer les employés par grade
-     */
-    public List<Employer> getByGrade(String grade) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            String hql = "FROM Employer WHERE grade = :grade";
-            Query<Employer> query = session.createQuery(hql, Employer.class);
-            query.setParameter("grade", grade);
-            return query.list();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-    
-    /**
-     * Récupérer les employés par poste
-     */
-    public List<Employer> getByPoste(String poste) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            String hql = "FROM Employer WHERE poste = :poste";
-            Query<Employer> query = session.createQuery(hql, Employer.class);
-            query.setParameter("poste", poste);
-            return query.list();
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -173,14 +200,26 @@ public class EmployerDAO {
     }
     
     /**
-     * Récupérer les employés par nom de département
+     * Récupérer tous les grades distincts (pour les filtres)
      */
-    public List<Employer> getByDepartementName(String nomDepartement) {
+    public List<String> getAllGrades() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            String hql = "FROM Employer e WHERE e.idDepartement IN " +
-                        "(SELECT d.id FROM Departement d WHERE LOWER(d.intitule) LIKE :nom)";
-            Query<Employer> query = session.createQuery(hql, Employer.class);
-            query.setParameter("nom", "%" + nomDepartement.toLowerCase() + "%");
+            String hql = "SELECT DISTINCT e.grade FROM Employer e ORDER BY e.grade";
+            Query<String> query = session.createQuery(hql, String.class);
+            return query.list();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    /**
+     * Récupérer tous les postes distincts (pour les filtres)
+     */
+    public List<String> getAllPostes() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "SELECT DISTINCT e.poste FROM Employer e ORDER BY e.poste";
+            Query<String> query = session.createQuery(hql, String.class);
             return query.list();
         } catch (Exception e) {
             e.printStackTrace();

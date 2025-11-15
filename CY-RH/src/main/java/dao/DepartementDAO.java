@@ -95,4 +95,17 @@ public class DepartementDAO {
             return false;
         }
     }
+    
+    /**
+     * Récupérer les employés sans département
+     */
+    public List<Integer> getEmployesSansDepartement() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "SELECT e.id FROM Employer e WHERE e.idDepartement IS NULL";
+            return session.createQuery(hql, Integer.class).list();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }

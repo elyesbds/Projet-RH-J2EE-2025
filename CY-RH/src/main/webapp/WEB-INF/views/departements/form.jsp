@@ -37,16 +37,27 @@
             
             <div class="form-group">
                 <label for="chefDepartement">Chef de département:</label>
-                <select id="chefDepartement" name="chefDepartement">
-                    <option value="">-- Aucun --</option>
-                    <c:forEach var="emp" items="${employees}">
-                        <option value="${emp.id}" 
-                                ${departement != null && departement.chefDepartement == emp.id ? 'selected' : ''}>
-                            ${emp.prenom} ${emp.nom} (${emp.poste})
-                        </option>
-                    </c:forEach>
-                </select>
-                <small>Sélectionnez un employé comme responsable du département</small>
+                <c:choose>
+                    <c:when test="${sessionScope.userRole == 'ADMIN'}">
+                        <select id="chefDepartement" name="chefDepartement">
+                            <option value="">-- Aucun --</option>
+                            <c:forEach var="emp" items="${employees}">
+                                <option value="${emp.id}" 
+                                        ${departement != null && departement.chefDepartement != null && departement.chefDepartement.id == emp.id ? 'selected' : ''}>
+                                    ${emp.prenom} ${emp.nom} (${emp.poste})
+                                </option>
+                            </c:forEach>
+                        </select>
+                        <small>Sélectionnez un employé comme responsable du département</small>
+                    </c:when>
+                    <c:otherwise>
+                        <input type="text" 
+                               value="${departement.chefDepartement != null ? departement.chefDepartement.prenom.concat(' ').concat(departement.chefDepartement.nom) : 'Non défini'}" 
+                               disabled 
+                               style="background: #f0f0f0; cursor: not-allowed;">
+                        <small>Seul l'administrateur peut modifier le chef de département</small>
+                    </c:otherwise>
+                </c:choose>
             </div>
             
             <div class="form-actions">

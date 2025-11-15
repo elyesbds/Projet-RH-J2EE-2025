@@ -16,8 +16,9 @@ public class Departement {
     @Column(nullable = false, unique = true, length = 100)
     private String intitule;
     
-    @Column(name = "Chef_departement")
-    private Integer chefDepartement;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "Chef_departement")
+    private Employer chefDepartement;
     
     // Constructeurs
     public Departement() {}
@@ -43,11 +44,11 @@ public class Departement {
         this.intitule = intitule;
     }
     
-    public Integer getChefDepartement() {
+    public Employer getChefDepartement() {
         return chefDepartement;
     }
-    
-    public void setChefDepartement(Integer chefDepartement) {
+
+    public void setChefDepartement(Employer chefDepartement) {
         this.chefDepartement = chefDepartement;
     }
 }
