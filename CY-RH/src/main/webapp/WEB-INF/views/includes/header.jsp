@@ -20,10 +20,13 @@
         <!-- Fiches de paie : Visible pour TOUS (MODIFIÉ : maintenant actif) -->
         <a href="${pageContext.request.contextPath}/fiches-paie">💰 Fiches de paie</a>
         
-        <!-- Statistiques : Visible pour Admin UNIQUEMENT -->
-        <c:if test="${sessionScope.userRole == 'ADMIN'}">
-            <a href="#">📈 Statistiques</a>
-        </c:if>
+<!-- Statistiques : Visible pour Admin UNIQUEMENT -->
+		<c:if test="${sessionScope.userRole == 'ADMIN'}">
+		    <a href="${pageContext.request.contextPath}/statistiques">📈 Statistiques</a>
+		</c:if>
+		
+		<!-- Absences : Visible pour TOUS -->
+		<a href="${pageContext.request.contextPath}/absences">📅 Absences</a>
     </div>
     <div class="navbar-user">
         <a href="${pageContext.request.contextPath}/mon-compte" class="user-profile-link">

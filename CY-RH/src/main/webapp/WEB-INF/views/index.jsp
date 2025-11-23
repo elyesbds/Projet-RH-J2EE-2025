@@ -94,9 +94,15 @@
                 <p>${sessionScope.userRole == 'ADMIN' ? 'Générer et consulter les fiches' : 'Consulter mes fiches'}</p>
             </a>
             
+            <!-- Section Absences -->
+            <a href="${pageContext.request.contextPath}/absences" class="menu-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                <h2>📅 Absences</h2>
+                <p>${sessionScope.userRole == 'ADMIN' ? 'Gérer les absences des employés (congés, maladies, etc.)' : 'Voir mes absences'}</p>
+            </a>
+
             <!-- Statistiques : Visible pour Admin UNIQUEMENT -->
             <c:if test="${sessionScope.userRole == 'ADMIN'}">
-                <a href="#" class="menu-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                <a href="${pageContext.request.contextPath}/statistiques" class="menu-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
                     <h2>📈 Statistiques</h2>
                     <p>Rapports et statistiques RH</p>
                 </a>

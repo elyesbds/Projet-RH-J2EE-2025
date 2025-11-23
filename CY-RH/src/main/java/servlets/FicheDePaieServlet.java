@@ -26,7 +26,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Date;
 import java.util.ArrayList;
-
+import dao.AbsenceDAO;
+import models.Absence;
+import java.util.Calendar;
 /**
  * Servlet pour gérer toutes les opérations sur les fiches de paie
  */
@@ -38,6 +40,7 @@ public class FicheDePaieServlet extends HttpServlet {
     private DepartementDAO departementDAO;
     private ProjetDAO projetDAO;
     private AffectationProjetDAO affectationDAO;
+    private AbsenceDAO absenceDAO;
     
     @Override
     public void init() {
@@ -46,6 +49,7 @@ public class FicheDePaieServlet extends HttpServlet {
         departementDAO = new DepartementDAO();
         projetDAO = new ProjetDAO();
         affectationDAO = new AffectationProjetDAO();
+        absenceDAO = new AbsenceDAO();
     }
     
     @Override
@@ -69,9 +73,6 @@ public class FicheDePaieServlet extends HttpServlet {
         } else if (action.equals("/voir")) {
             // Voir les détails d'une fiche
             showViewForm(request, response);
-        } else if (action.equals("/imprimer")) {
-            // Imprimer une fiche
-            showPrintForm(request, response);
         } else if (action.equals("/ajouter-prime")) {
             // Afficher le formulaire pour ajouter une prime
             showAjouterPrimeForm(request, response);
@@ -487,9 +488,12 @@ public class FicheDePaieServlet extends HttpServlet {
             departement = departementDAO.getById(employer.getIdDepartement());
         }
         
+        List<Absence> absencesMois = getAbsencesDuMois(fiche);
+        
         request.setAttribute("fiche", fiche);
         request.setAttribute("employer", employer);
         request.setAttribute("departement", departement);
+        request.setAttribute("absencesMois", absencesMois);
         request.getRequestDispatcher("/WEB-INF/views/fiches-paie/voir.jsp").forward(request, response);
     }
     
@@ -497,28 +501,49 @@ public class FicheDePaieServlet extends HttpServlet {
      * Créer une nouvelle fiche de paie
      * (Admin uniquement)
      */
-    private void createFiche(HttpServletRequest request, HttpServletResponse response) 
+    private void createFiche(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         if (!PermissionUtil.isAdmin(request)) {
             response.sendRedirect(request.getContextPath() + "/fiches-paie");
             return;
         }
-        
+
         try {
             int idEmployer = Integer.parseInt(request.getParameter("idEmployer"));
             int mois = Integer.parseInt(request.getParameter("mois"));
             int annee = Integer.parseInt(request.getParameter("annee"));
             BigDecimal salaireBase = new BigDecimal(request.getParameter("salaireBase"));
-            
+
+            // Récupérer les primes
             String primesStr = request.getParameter("primes");
-            String deductionsStr = request.getParameter("deductions");
-            
-            BigDecimal primes = (primesStr != null && !primesStr.trim().isEmpty()) 
+            BigDecimal primes = (primesStr != null && !primesStr.trim().isEmpty())
                 ? new BigDecimal(primesStr) : BigDecimal.ZERO;
-            BigDecimal deductions = (deductionsStr != null && !deductionsStr.trim().isEmpty()) 
+
+            // Récupérer les déductions manuelles
+            String deductionsStr = request.getParameter("deductions");
+            BigDecimal deductionsManuelles = (deductionsStr != null && !deductionsStr.trim().isEmpty())
                 ? new BigDecimal(deductionsStr) : BigDecimal.ZERO;
-            
+
+            // ✅ VALIDATION : Bloquer les valeurs négatives
+            if (primes.compareTo(BigDecimal.ZERO) < 0) {
+                request.setAttribute("error", "❌ Les primes ne peuvent pas être négatives !");
+                showNewForm(request, response);
+                return;
+            }
+
+            if (deductionsManuelles.compareTo(BigDecimal.ZERO) < 0) {
+                request.setAttribute("error", "❌ Les déductions ne peuvent pas être négatives !");
+                showNewForm(request, response);
+                return;
+            }
+
+            // Calculer les déductions des absences injustifiées
+            BigDecimal deductionsAbsences = calculerDeductionsAbsences(idEmployer, mois, annee, salaireBase);
+
+            // Total des déductions
+            BigDecimal deductionsTotal = deductionsAbsences.add(deductionsManuelles);
+
             // Créer la fiche
             FicheDePaie fiche = new FicheDePaie();
             fiche.setIdEmployer(idEmployer);
@@ -526,25 +551,25 @@ public class FicheDePaieServlet extends HttpServlet {
             fiche.setAnnee(annee);
             fiche.setSalaireBase(salaireBase);
             fiche.setPrimes(primes);
-            fiche.setDeductions(deductions);
+            fiche.setDeductions(deductionsTotal);
             fiche.setDateGeneration(new Date());
-            
+
             // Calculer le net à payer
             fiche.calculerNetAPayer();
-            
+
             boolean success = ficheDAO.create(fiche);
-            
+
             HttpSession session = request.getSession();
             if (success) {
-                session.setAttribute("successMessage", "✅ Fiche de paie créée avec succès !");
+                session.setAttribute("successMessage", "Fiche de paie créée avec succès !");
                 response.sendRedirect(request.getContextPath() + "/fiches-paie");
             } else {
-                request.setAttribute("error", "❌ Erreur : Une fiche existe déjà pour ce mois");
+                request.setAttribute("error", "Erreur : Une fiche existe déjà pour ce mois");
                 showNewForm(request, response);
             }
-            
+
         } catch (NumberFormatException e) {
-            request.setAttribute("error", "❌ Erreur de format dans les données");
+            request.setAttribute("error", "Erreur de format dans les données");
             showNewForm(request, response);
         }
     }
@@ -580,6 +605,18 @@ public class FicheDePaieServlet extends HttpServlet {
                 ? new BigDecimal(primesStr) : BigDecimal.ZERO;
             BigDecimal deductions = (deductionsStr != null && !deductionsStr.trim().isEmpty()) 
                 ? new BigDecimal(deductionsStr) : BigDecimal.ZERO;
+            
+            if (primes.compareTo(BigDecimal.ZERO) < 0) {
+                request.setAttribute("error", "❌ Les primes ne peuvent pas être négatives !");
+                showEditForm(request, response);
+                return;
+            }
+
+            if (deductions.compareTo(BigDecimal.ZERO) < 0) {
+                request.setAttribute("error", "❌ Les déductions ne peuvent pas être négatives !");
+                showEditForm(request, response);
+                return;
+            }
             
             fiche.setPrimes(primes);
             fiche.setDeductions(deductions);
@@ -680,6 +717,18 @@ public class FicheDePaieServlet extends HttpServlet {
             BigDecimal deductions = (deductionsStr != null && !deductionsStr.trim().isEmpty()) 
                 ? new BigDecimal(deductionsStr) : BigDecimal.ZERO;
             
+            if (primes.compareTo(BigDecimal.ZERO) < 0) {
+                request.setAttribute("error", "Les primes ne peuvent pas être négatives !");
+                showAjouterPrimeForm(request, response);
+                return;
+            }
+
+            if (deductions.compareTo(BigDecimal.ZERO) < 0) {
+                request.setAttribute("error", "Les déductions ne peuvent pas être négatives !");
+                showAjouterPrimeForm(request, response);
+                return;
+            }
+            
             fiche.setPrimes(primes);
             fiche.setDeductions(deductions);
             
@@ -728,61 +777,75 @@ public class FicheDePaieServlet extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/fiches-paie");
     }
     
+  
     /**
-     * Afficher la fiche pour impression
+     * Calculer les déductions basées sur les absences injustifiées du mois
      */
-    private void showPrintForm(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException {
-        
-        Employer user = PermissionUtil.getLoggedUser(request);
-        
-        if (user == null) {
-            response.sendRedirect(request.getContextPath() + "/login");
-            return;
-        }
-        
-        int id = Integer.parseInt(request.getParameter("id"));
-        FicheDePaie fiche = ficheDAO.getById(id);
-        
-        if (fiche == null) {
-            response.sendRedirect(request.getContextPath() + "/fiches-paie");
-            return;
-        }
-        
-        // Vérifier les permissions d'accès
-        if (!PermissionUtil.isAdmin(request)) {
-            
-            if (PermissionUtil.isChefDept(request)) {
-                Employer employer = employerDAO.getById(fiche.getIdEmployer());
-                if (employer == null || !employer.getIdDepartement().equals(user.getIdDepartement())) {
-                    response.sendRedirect(request.getContextPath() + "/fiches-paie");
-                    return;
-                }
-                
-            } else if (PermissionUtil.isChefProjet(request)) {
-                List<FicheDePaie> fichesAutorisees = getFichesForChefProjet(user.getId());
-                if (!isFicheInList(fiche, fichesAutorisees)) {
-                    response.sendRedirect(request.getContextPath() + "/fiches-paie");
-                    return;
-                }
-                
-            } else {
-                if (!fiche.getIdEmployer().equals(user.getId())) {
-                    response.sendRedirect(request.getContextPath() + "/fiches-paie");
-                    return;
+    private BigDecimal calculerDeductionsAbsences(Integer idEmployer, Integer mois, Integer annee, BigDecimal salaireBase) {
+        try {
+            // Créer les dates de début et fin du mois
+            Calendar cal = Calendar.getInstance();
+            cal.set(annee, mois - 1, 1);
+            Date dateDebut = cal.getTime();
+
+            cal.set(Calendar.DAY_OF_MONTH, cal.getActualMaximum(Calendar.DAY_OF_MONTH));
+            Date dateFin = cal.getTime();
+
+            // Récupérer les absences du mois
+            List<Absence> absences = absenceDAO.getByEmployerAndPeriode(idEmployer, dateDebut, dateFin);
+
+            if (absences == null || absences.isEmpty()) {
+                return BigDecimal.ZERO;
+            }
+
+            int joursAbsence = 0;
+
+            // Compter uniquement les absences injustifiées
+            for (Absence abs : absences) {
+                if ("ABSENCE_INJUSTIFIEE".equals(abs.getTypeAbsence())) {
+                    // Calculer le nombre de jours d'absence dans ce mois
+                    Date debut = abs.getDateDebut().before(dateDebut) ? dateDebut : abs.getDateDebut();
+                    Date fin = abs.getDateFin().after(dateFin) ? dateFin : abs.getDateFin();
+
+                    long diff = fin.getTime() - debut.getTime();
+                    int jours = (int) (diff / (1000 * 60 * 60 * 24)) + 1;
+                    joursAbsence += jours;
                 }
             }
+
+            // Calculer la déduction : (salaire / 30) * jours d'absence
+            if (joursAbsence > 0) {
+                BigDecimal salaireParJour = new BigDecimal("200.00");
+                return salaireParJour.multiply(new BigDecimal(joursAbsence));
+            }
+
+            return BigDecimal.ZERO;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return BigDecimal.ZERO;
         }
-        
-        Employer employer = employerDAO.getById(fiche.getIdEmployer());
-        Departement departement = null;
-        if (employer != null && employer.getIdDepartement() != null) {
-            departement = departementDAO.getById(employer.getIdDepartement());
+    }
+  
+    /**
+     * Récupérer les absences du mois pour une fiche
+     */
+    private List<Absence> getAbsencesDuMois(FicheDePaie fiche) {
+        try {
+            // Créer les dates du mois
+            Calendar cal = Calendar.getInstance();
+            cal.set(fiche.getAnnee(), fiche.getMois() - 1, 1);
+            Date dateDebut = cal.getTime();
+            
+            cal.set(Calendar.DAY_OF_MONTH, cal.getActualMaximum(Calendar.DAY_OF_MONTH));
+            Date dateFin = cal.getTime();
+            
+            // Récupérer les absences du mois
+            return absenceDAO.getByEmployerAndPeriode(fiche.getIdEmployer(), dateDebut, dateFin);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
         }
-        
-        request.setAttribute("fiche", fiche);
-        request.setAttribute("employer", employer);
-        request.setAttribute("departement", departement);
-        request.getRequestDispatcher("/WEB-INF/views/fiches-paie/imprimer.jsp").forward(request, response);
     }
 }

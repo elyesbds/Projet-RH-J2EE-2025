@@ -185,7 +185,6 @@ public class DepartementServlet extends HttpServlet {
     private void createDepartement(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
-        // Seul l'admin peut créer
         if (!PermissionUtil.isAdmin(request)) {
             response.sendRedirect(request.getContextPath() + "/departements");
             return;
@@ -193,7 +192,6 @@ public class DepartementServlet extends HttpServlet {
         
         String intitule = request.getParameter("intitule");
         
-        // Validation
         if (intitule == null || intitule.trim().isEmpty()) {
             request.setAttribute("error", "L'intitulé du département est obligatoire");
             showNewForm(request, response);
@@ -204,16 +202,15 @@ public class DepartementServlet extends HttpServlet {
             Departement departement = new Departement();
             departement.setIntitule(intitule.trim());
             
-            // Chef de département (optionnel)
             String chefStr = request.getParameter("chefDepartement");
             if (chefStr != null && !chefStr.trim().isEmpty()) {
-                // CORRECTION: Récupérer l'objet Employer complet
                 Employer chef = employerDAO.getById(Integer.parseInt(chefStr));
                 departement.setChefDepartement(chef);
                 
-                // Changer le rôle du chef si ce n'est pas un admin
+                // SYNCHRONISER : Changer le rôle + affecter au département
                 if (chef != null && !"ADMIN".equals(chef.getRole())) {
                     chef.setRole("CHEF_DEPT");
+                    chef.setIdDepartement(null); // Sera défini après création du département
                     employerDAO.update(chef);
                 }
             }
@@ -221,6 +218,15 @@ public class DepartementServlet extends HttpServlet {
             boolean success = departementDAO.create(departement);
             
             if (success) {
+                //Affecter le chef au département après création
+                if (chefStr != null && !chefStr.trim().isEmpty()) {
+                    Employer chef = employerDAO.getById(Integer.parseInt(chefStr));
+                    if (chef != null) {
+                        chef.setIdDepartement(departement.getId());
+                        employerDAO.update(chef);
+                    }
+                }
+                
                 response.sendRedirect(request.getContextPath() + "/departements");
             } else {
                 request.setAttribute("error", "Erreur lors de la création du département");
@@ -250,7 +256,6 @@ public class DepartementServlet extends HttpServlet {
                 return;
             }
             
-            // Vérifier les permissions : Admin OU Chef du département concerné
             boolean isChefOfThisDept = currentUser != null && 
                                        departement.getChefDepartement() != null &&
                                        currentUser.getId().equals(departement.getChefDepartement().getId());
@@ -260,19 +265,40 @@ public class DepartementServlet extends HttpServlet {
                 return;
             }
             
-            // Mise à jour des champs
             String intitule = request.getParameter("intitule");
             if (intitule != null && !intitule.trim().isEmpty()) {
                 departement.setIntitule(intitule.trim());
             }
             
-            // Seul l'admin peut changer le chef de département
+            // Seul l'admin peut changer le chef
             if (PermissionUtil.isAdmin(request)) {
+                // Récupérer l'ancien chef
+                Employer ancienChef = departement.getChefDepartement();
+                
                 String chefStr = request.getParameter("chefDepartement");
                 if (chefStr != null && !chefStr.trim().isEmpty()) {
-                    Employer chef = employerDAO.getById(Integer.parseInt(chefStr));
-                    departement.setChefDepartement(chef);
+                    Employer nouveauChef = employerDAO.getById(Integer.parseInt(chefStr));
+                    
+                    // ✅ Remettre l'ancien chef en EMPLOYE (sauf si ADMIN)
+                    if (ancienChef != null && !"ADMIN".equals(ancienChef.getRole())) {
+                        ancienChef.setRole("EMPLOYE");
+                        employerDAO.update(ancienChef);
+                    }
+                    
+                    // Promouvoir le nouveau chef
+                    if (nouveauChef != null && !"ADMIN".equals(nouveauChef.getRole())) {
+                        nouveauChef.setRole("CHEF_DEPT");
+                        nouveauChef.setIdDepartement(id);
+                        employerDAO.update(nouveauChef);
+                    }
+                    
+                    departement.setChefDepartement(nouveauChef);
                 } else {
+                    // Si on retire le chef : remettre en EMPLOYE
+                    if (ancienChef != null && !"ADMIN".equals(ancienChef.getRole())) {
+                        ancienChef.setRole("EMPLOYE");
+                        employerDAO.update(ancienChef);
+                    }
                     departement.setChefDepartement(null);
                 }
             }
@@ -291,21 +317,44 @@ public class DepartementServlet extends HttpServlet {
             showEditForm(request, response);
         }
     }
-    
     /**
      * Supprimer un département
      */
     private void deleteDepartement(HttpServletRequest request, HttpServletResponse response) 
             throws IOException {
         
-        // Seul l'admin peut supprimer
         if (!PermissionUtil.isAdmin(request)) {
             response.sendRedirect(request.getContextPath() + "/departements");
             return;
         }
         
         int id = Integer.parseInt(request.getParameter("id"));
-        departementDAO.delete(id);
+        Departement departement = departementDAO.getById(id);
+        
+        if (departement != null) {
+            // Récupérer tous les membres du département
+            List<Employer> membres = employerDAO.getByDepartement(id);
+            
+            if (membres != null) {
+                for (Employer emp : membres) {
+                    // Retirer le département
+                    emp.setIdDepartement(null);
+                    
+                    // Si c'est le chef du département, remettre en EMPLOYE
+                    if ("CHEF_DEPT".equals(emp.getRole()) && 
+                        departement.getChefDepartement() != null &&
+                        departement.getChefDepartement().getId().equals(emp.getId())) {
+                        emp.setRole("EMPLOYE");
+                    }
+                    
+                    employerDAO.update(emp);
+                }
+            }
+            
+            // Supprimer le département
+            departementDAO.delete(id);
+        }
+        
         response.sendRedirect(request.getContextPath() + "/departements");
     }
     
@@ -464,11 +513,11 @@ public class DepartementServlet extends HttpServlet {
                          departement.getChefDepartement().getId().equals(employeId);
         
         if (isChef) {
-            // Si c'est le chef, retirer le lien chef dans le département
+            // Retirer d'abord le statut de chef dans le département
             departement.setChefDepartement(null);
             departementDAO.update(departement);
             
-            // Changer son rôle de CHEF_DEPT à EMPLOYE (seulement si son rôle était CHEF_DEPT)
+            // Changer son rôle de CHEF_DEPT à EMPLOYE
             if ("CHEF_DEPT".equals(employe.getRole())) {
                 employe.setRole("EMPLOYE");
             }

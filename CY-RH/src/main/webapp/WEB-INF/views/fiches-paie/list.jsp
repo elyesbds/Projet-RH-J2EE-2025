@@ -254,13 +254,7 @@
                                         👁️ Voir
                                     </a>
                                     
-                                    <!-- Bouton Imprimer (tout le monde) -->
-                                    <a href="${pageContext.request.contextPath}/fiches-paie/imprimer?id=${fiche.id}" 
-                                       class="btn-edit"
-                                       title="Imprimer">
-                                        🖨️ Imprimer
-                                    </a>
-                                    
+                                                                    
                                     <!-- Bouton Ajouter Prime (CHEF_DEPT et CHEF_PROJET, sauf leurs propres fiches) -->
                                     <c:if test="${canAddPrime && fiche.idEmployer != currentUserId}">
                                         <a href="${pageContext.request.contextPath}/fiches-paie/ajouter-prime?id=${fiche.id}" 

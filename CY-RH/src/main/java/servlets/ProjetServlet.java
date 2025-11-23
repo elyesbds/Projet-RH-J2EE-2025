@@ -285,10 +285,18 @@ public class ProjetServlet extends HttpServlet {
                 projet.setDateFinPrevue(sdf.parse(dateFinPrevueStr));
             }
             
-            // Chef de projet
+         // Chef de projet
             String chefStr = request.getParameter("chefProjet");
             if (chefStr != null && !chefStr.trim().isEmpty()) {
-                projet.setChefProjet(Integer.parseInt(chefStr));
+                int chefId = Integer.parseInt(chefStr);
+                projet.setChefProjet(chefId);
+                
+                // Synchroniser : Changer le role en CHEF_PROJET
+                Employer chef = employerDAO.getById(chefId);
+                if (chef != null && !"ADMIN".equals(chef.getRole()) && !"CHEF_DEPT".equals(chef.getRole())) {
+                    chef.setRole("CHEF_PROJET");
+                    employerDAO.update(chef);
+                }
             }
             
             // Département
@@ -344,9 +352,37 @@ public class ProjetServlet extends HttpServlet {
             
             // ADMIN : peut tout modifier
             if (isAdmin) {
-                projet.setNomProjet(request.getParameter("nomProjet"));
-                projet.setEtatProjet(request.getParameter("etatProjet"));
-                
+            	projet.setNomProjet(request.getParameter("nomProjet"));
+            	String nouvelEtat = request.getParameter("etatProjet");
+            	projet.setEtatProjet(nouvelEtat);
+
+            	// Si le projet est TERMINE ou ANNULE, vérifier le chef
+            	if (("TERMINE".equals(nouvelEtat) || "ANNULE".equals(nouvelEtat)) && projet.getChefProjet() != null) {
+            	    Integer chefId = projet.getChefProjet();
+            	    Employer chef = employerDAO.getById(chefId);
+            	    
+            	    if (chef != null && "CHEF_PROJET".equals(chef.getRole())) {
+            	        // Vérifier s'il a d'autres projets EN_COURS
+            	        List<Projet> autresProjets = projetDAO.getByChefProjet(chefId);
+            	        boolean aAutreProjetActif = false;
+            	        
+            	        if (autresProjets != null) {
+            	            for (Projet p : autresProjets) {
+            	                if (!p.getId().equals(projet.getId()) && "EN_COURS".equals(p.getEtatProjet())) {
+            	                    aAutreProjetActif = true;
+            	                    break;
+            	                }
+            	            }
+            	        }
+            	        
+            	        // Si aucun autre projet actif, remettre en EMPLOYE
+            	        if (!aAutreProjetActif) {
+            	            chef.setRole("EMPLOYE");
+            	            employerDAO.update(chef);
+            	        }
+            	    }
+            	}             
+                                
                 String dateDebutStr = request.getParameter("dateDebut");
                 if (dateDebutStr != null && !dateDebutStr.trim().isEmpty()) {
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -369,7 +405,34 @@ public class ProjetServlet extends HttpServlet {
                 
                 String chefStr = request.getParameter("chefProjet");
                 if (chefStr != null && !chefStr.trim().isEmpty()) {
-                    projet.setChefProjet(Integer.parseInt(chefStr));
+                    int nouveauChefId = Integer.parseInt(chefStr);
+                    Integer ancienChefId = projet.getChefProjet();
+                    
+                    // Si changement de chef
+                    if (ancienChefId == null || !ancienChefId.equals(nouveauChefId)) {
+                        
+                        // Remettre l'ancien chef en EMPLOYE (sauf si ADMIN ou CHEF_DEPT)
+                        if (ancienChefId != null) {
+                            Employer ancienChef = employerDAO.getById(ancienChefId);
+                            if (ancienChef != null && "CHEF_PROJET".equals(ancienChef.getRole())) {
+                                // Vérifier s'il est chef d'autres projets
+                                List<Projet> autresProjets = projetDAO.getByChefProjet(ancienChefId);
+                                if (autresProjets == null || autresProjets.size() <= 1) {
+                                    ancienChef.setRole("EMPLOYE");
+                                    employerDAO.update(ancienChef);
+                                }
+                            }
+                        }
+                        
+                        // Promouvoir le nouveau chef
+                        Employer nouveauChef = employerDAO.getById(nouveauChefId);
+                        if (nouveauChef != null && !"ADMIN".equals(nouveauChef.getRole()) && !"CHEF_DEPT".equals(nouveauChef.getRole())) {
+                            nouveauChef.setRole("CHEF_PROJET");
+                            employerDAO.update(nouveauChef);
+                        }
+                    }
+                    
+                    projet.setChefProjet(nouveauChefId);
                 }
                 
                 String deptStr = request.getParameter("idDepartement");
@@ -433,8 +496,27 @@ public class ProjetServlet extends HttpServlet {
         }
         
         int id = Integer.parseInt(request.getParameter("id"));
+        Projet projet = projetDAO.getById(id);
+        
+        if (projet != null && projet.getChefProjet() != null) {
+            Integer chefId = projet.getChefProjet();
+            
+            // Vérifier si le chef a d'autres projets
+            List<Projet> autresProjets = projetDAO.getByChefProjet(chefId);
+            
+            // Si ce projet est le seul où il est chef, remettre en EMPLOYE
+            if (autresProjets != null && autresProjets.size() == 1) {
+                Employer chef = employerDAO.getById(chefId);
+                if (chef != null && "CHEF_PROJET".equals(chef.getRole())) {
+                    chef.setRole("EMPLOYE");
+                    employerDAO.update(chef);
+                }
+            }
+        }
+        
+        // Supprimer le projet
         projetDAO.delete(id);
-        request.getSession().setAttribute("successMessage", "✅ Projet supprimé avec succès !");
+        request.getSession().setAttribute("successMessage", "Projet supprimé avec succès !");
         response.sendRedirect(request.getContextPath() + "/projets");
     }
     

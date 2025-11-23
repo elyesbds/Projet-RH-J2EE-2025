@@ -37,5 +37,6 @@
 		<mapping class="models.Projet"/>
         <mapping class="models.AffectationProjet"/>
         <mapping class="models.FicheDePaie"/>
+        <mapping class="models.Absence"/>
     </session-factory>
 </hibernate-configuration>

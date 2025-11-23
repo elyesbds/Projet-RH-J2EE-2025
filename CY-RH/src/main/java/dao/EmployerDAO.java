@@ -226,4 +226,20 @@ public class EmployerDAO {
             return null;
         }
     }
+    
+    /**
+     * Compter le nombre d'employés dans un département
+     */
+    public int countByDepartement(Integer idDepartement) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "SELECT COUNT(e) FROM Employer e WHERE e.idDepartement = :deptId";
+            Query<Long> query = session.createQuery(hql, Long.class);
+            query.setParameter("deptId", idDepartement);
+            Long count = query.uniqueResult();
+            return count != null ? count.intValue() : 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
 }

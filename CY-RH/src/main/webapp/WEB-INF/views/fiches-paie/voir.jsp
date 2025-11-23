@@ -5,86 +5,52 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fiche de Paie - ${employer.prenom} ${employer.nom}</title>
     <style>
-        /* Style pour l'affichage écran */
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
             padding: 20px;
         }
         
-        .print-container {
-            max-width: 800px;
+        .fiche-container {
+            max-width: 900px;
             margin: 0 auto;
             background: white;
             padding: 40px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
         }
         
-        .no-print {
+        .header {
             text-align: center;
-            margin-bottom: 20px;
-        }
-        
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 14px;
-            margin: 0 5px;
-            transition: all 0.3s;
-        }
-        
-        .btn-primary {
-            background-color: #007bff;
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background-color: #0056b3;
-        }
-        
-        .btn-secondary {
-            background-color: #6c757d;
-            color: white;
-        }
-        
-        .btn-secondary:hover {
-            background-color: #545b62;
-        }
-        
-        /* En-tête de la fiche */
-        .fiche-header {
-            text-align: center;
+            margin-bottom: 30px;
             border-bottom: 3px solid #007bff;
             padding-bottom: 20px;
-            margin-bottom: 30px;
         }
         
-        .fiche-header h1 {
-            color: #007bff;
-            margin: 0 0 10px 0;
-            font-size: 28px;
-        }
-        
-        .fiche-header .company-name {
-            font-size: 20px;
-            font-weight: bold;
+        .header h1 {
             color: #333;
+            font-size: 18px;
+            margin-bottom: 5px;
         }
         
-        .fiche-header .subtitle {
-            color: #6c757d;
+        .header h2 {
+            color: #007bff;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .periode {
+            color: #666;
             font-size: 14px;
         }
         
-        /* Informations générales */
         .info-section {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -93,82 +59,180 @@
         }
         
         .info-box {
-            border: 1px solid #dee2e6;
-            padding: 15px;
+            border: 1px solid #ddd;
+            padding: 20px;
             border-radius: 5px;
         }
         
         .info-box h3 {
-            margin: 0 0 15px 0;
             color: #007bff;
             font-size: 16px;
+            margin-bottom: 15px;
             border-bottom: 2px solid #007bff;
-            padding-bottom: 5px;
+            padding-bottom: 8px;
         }
         
         .info-row {
             display: flex;
             justify-content: space-between;
-            padding: 5px 0;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
         }
         
         .info-label {
-            color: #6c757d;
-            font-weight: bold;
+            color: #666;
+            font-weight: 500;
         }
         
         .info-value {
             color: #333;
+            font-weight: bold;
         }
         
-        /* Tableau des montants */
-        .amounts-table {
+        .salaire-table {
             width: 100%;
             border-collapse: collapse;
             margin: 30px 0;
         }
         
-        .amounts-table th,
-        .amounts-table td {
-            padding: 12px;
-            text-align: left;
-            border: 1px solid #dee2e6;
-        }
-        
-        .amounts-table thead {
+        .salaire-table th {
             background-color: #007bff;
             color: white;
+            padding: 15px;
+            text-align: left;
+            font-size: 16px;
         }
         
-        .amounts-table tbody tr:nth-child(even) {
-            background-color: #f8f9fa;
-        }
-        
-        .amounts-table .text-right {
+        .salaire-table th:last-child {
             text-align: right;
         }
         
-        .amounts-table .total-row {
-            background-color: #28a745 !important;
-            color: white;
+        .salaire-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .salaire-table td:last-child {
+            text-align: right;
             font-weight: bold;
+        }
+        
+        .salaire-table tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .montant-positif {
+            color: #28a745;
+        }
+        
+        .montant-negatif {
+            color: #dc3545;
+        }
+        
+        .net-payer {
+            background-color: #28a745 !important;
+            color: white !important;
             font-size: 18px;
         }
         
-        /* Pied de page */
-        .fiche-footer {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #dee2e6;
-            text-align: center;
+        .net-payer td {
+            font-size: 18px;
+            font-weight: bold;
+            padding: 20px 15px;
+        }
+        
+        .info-complementaires {
+            background-color: #e8f4fd;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 30px 0;
+            border-left: 4px solid #007bff;
+        }
+        
+        .info-complementaires h3 {
+            color: #007bff;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .info-complementaires p {
+            color: #555;
+            line-height: 1.6;
+            margin: 5px 0;
+        }
+        
+        .info-complementaires strong {
+            color: #333;
+        }
+        
+        /* Section Absences */
+        .absences-section {
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            border-radius: 5px;
+        }
+        
+        .absences-section h3 {
+            color: #856404;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .absences-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        
+        .absences-table th {
+            background-color: #ffc107;
+            color: #333;
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        
+        .absences-table td {
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            background-color: white;
+        }
+        
+        .absences-table tr:hover td {
+            background-color: #fff9e6;
+        }
+        
+        .badge-conge {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .badge-maladie {
             color: #6c757d;
+            font-weight: bold;
+        }
+        
+        .badge-injustifiee {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .absences-note {
+            margin-top: 10px;
             font-size: 12px;
+            color: #856404;
         }
         
         .signature-section {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 30px;
+            gap: 50px;
             margin-top: 50px;
         }
         
@@ -176,59 +240,88 @@
             text-align: center;
         }
         
-        .signature-box p {
-            margin: 5px 0;
+        .signature-box h4 {
             color: #333;
+            margin-bottom: 40px;
+            font-size: 14px;
         }
         
         .signature-line {
-            border-top: 1px solid #333;
-            width: 200px;
-            margin: 60px auto 10px;
+            border-top: 2px solid #333;
+            padding-top: 10px;
+            color: #666;
+            font-size: 12px;
         }
         
-        /* Style pour l'impression */
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #999;
+            font-size: 12px;
+        }
+        
+        .action-buttons {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+        
         @media print {
+            .action-buttons {
+                display: none;
+            }
             body {
                 background: white;
                 padding: 0;
             }
-            
-            .print-container {
+            .fiche-container {
                 box-shadow: none;
                 padding: 20px;
-            }
-            
-            .no-print {
-                display: none !important;
-            }
-            
-            /* Éviter les sauts de page au milieu des éléments */
-            .info-section,
-            .amounts-table,
-            .signature-section {
-                page-break-inside: avoid;
             }
         }
     </style>
 </head>
 <body>
-    <div class="print-container">
-        <!-- Boutons d'action (cachés à l'impression) -->
-        <div class="no-print">
-            <a href="${pageContext.request.contextPath}/fiches-paie" class="btn btn-primary">
-                ⬅️ Retour à la Liste
-            </a>
-            <a href="${pageContext.request.contextPath}/fiches-paie/imprimer?id=${fiche.id}" class="btn btn-secondary">
-                🖨️ Imprimer
-            </a>
+    <div class="fiche-container">
+        <!-- Boutons d'action -->
+        <div class="action-buttons">
+            <button onclick="window.print()" class="btn btn-primary">🖨️ Imprimer la Fiche</button>
+            <a href="${pageContext.request.contextPath}/fiches-paie" class="btn btn-secondary">⬅️ Retour à la Liste</a>
+            <a href="${pageContext.request.contextPath}/mon-compte" class="btn btn-success">👤 Mon Compte</a>
         </div>
         
-        <!-- En-tête de la fiche -->
-        <div class="fiche-header">
-            <div class="company-name">ENTREPRISE CY-RH</div>
-            <h1>FICHE DE PAIE</h1>
-            <div class="subtitle">
+        <!-- En-tête -->
+        <div class="header">
+            <h1>ENTREPRISE CY-RH</h1>
+            <h2>FICHE DE PAIE</h2>
+            <p class="periode">
                 Période : 
                 <c:choose>
                     <c:when test="${fiche.mois == 1}">Janvier</c:when>
@@ -245,33 +338,22 @@
                     <c:when test="${fiche.mois == 12}">Décembre</c:when>
                 </c:choose>
                 ${fiche.annee}
-            </div>
-            <div class="subtitle">
-                Date de génération : <fmt:formatDate value="${fiche.dateGeneration}" pattern="dd/MM/yyyy"/>
-            </div>
+            </p>
+            <p class="periode">Date de génération : <fmt:formatDate value="${fiche.dateGeneration}" pattern="dd/MM/yyyy"/></p>
         </div>
         
-        <!-- Informations générales -->
+        <!-- Informations Employeur et Employé -->
         <div class="info-section">
-            <!-- Informations Employeur -->
+            <!-- Employeur -->
             <div class="info-box">
-                <h3>🏢 EMPLOYEUR</h3>
+                <h3>👔 EMPLOYEUR</h3>
                 <div class="info-row">
                     <span class="info-label">Entreprise :</span>
                     <span class="info-value">CY-RH</span>
                 </div>
                 <div class="info-row">
                     <span class="info-label">Département :</span>
-                    <span class="info-value">
-                        <c:choose>
-                            <c:when test="${not empty departement}">
-                                ${departement.intitule}
-                            </c:when>
-                            <c:otherwise>
-                                Non affecté
-                            </c:otherwise>
-                        </c:choose>
-                    </span>
+                    <span class="info-value">${departement != null ? departement.intitule : 'N/A'}</span>
                 </div>
                 <div class="info-row">
                     <span class="info-label">Fiche N° :</span>
@@ -279,7 +361,7 @@
                 </div>
             </div>
             
-            <!-- Informations Employé -->
+            <!-- Employé -->
             <div class="info-box">
                 <h3>👤 EMPLOYÉ</h3>
                 <div class="info-row">
@@ -305,98 +387,108 @@
             </div>
         </div>
         
-        <!-- Tableau des montants -->
-        <table class="amounts-table">
+        <!-- Tableau des salaires -->
+        <table class="salaire-table">
             <thead>
                 <tr>
                     <th>Libellé</th>
-                    <th class="text-right">Montant (€)</th>
+                    <th>Montant (€)</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td><strong>Salaire de base</strong></td>
-                    <td class="text-right">
-                        <fmt:formatNumber value="${fiche.salaireBase}" pattern="#,##0.00"/>
-                    </td>
+                    <td>Salaire de base</td>
+                    <td><fmt:formatNumber value="${fiche.salaireBase}" minFractionDigits="2" maxFractionDigits="2"/></td>
                 </tr>
-                
-                <c:if test="${fiche.primes > 0}">
-                    <tr>
-                        <td>+ Primes et bonus</td>
-                        <td class="text-right" style="color: #28a745;">
-                            + <fmt:formatNumber value="${fiche.primes}" pattern="#,##0.00"/>
-                        </td>
-                    </tr>
-                </c:if>
-                
-                <c:if test="${fiche.deductions > 0}">
-                    <tr>
-                        <td>- Déductions</td>
-                        <td class="text-right" style="color: #dc3545;">
-                            - <fmt:formatNumber value="${fiche.deductions}" pattern="#,##0.00"/>
-                        </td>
-                    </tr>
-                </c:if>
-                
-                <tr class="total-row">
-                    <td><strong>NET À PAYER</strong></td>
-                    <td class="text-right">
-                        <strong><fmt:formatNumber value="${fiche.netAPayer}" pattern="#,##0.00"/> €</strong>
-                    </td>
+                <tr>
+                    <td>+ Primes et bonus</td>
+                    <td class="montant-positif">+ <fmt:formatNumber value="${fiche.primes}" minFractionDigits="2" maxFractionDigits="2"/></td>
+                </tr>
+                <tr>
+                    <td>- Déductions</td>
+                    <td class="montant-negatif">- <fmt:formatNumber value="${fiche.deductions}" minFractionDigits="2" maxFractionDigits="2"/></td>
+                </tr>
+                <tr class="net-payer">
+                    <td>NET À PAYER</td>
+                    <td><fmt:formatNumber value="${fiche.netAPayer}" minFractionDigits="2" maxFractionDigits="2"/> €</td>
                 </tr>
             </tbody>
         </table>
         
-        <!-- Détails des primes et déductions (si présents) -->
-        <c:if test="${fiche.primes > 0 || fiche.deductions > 0}">
-            <div style="margin: 30px 0; padding: 15px; background: #f8f9fa; border-radius: 5px;">
-                <h3 style="margin: 0 0 10px 0; color: #333;">ℹ️ Informations complémentaires</h3>
-                
-                <c:if test="${fiche.primes > 0}">
-                    <p style="margin: 5px 0;">
-                        <strong>Primes :</strong> 
-                        Les primes incluent les heures supplémentaires, bonus de performance, 
-                        primes exceptionnelles, etc.
-                    </p>
-                </c:if>
-                
-                <c:if test="${fiche.deductions > 0}">
-                    <p style="margin: 5px 0;">
-                        <strong>Déductions :</strong> 
-                        Les déductions peuvent inclure les retards, absences non justifiées, 
-                        ou autres retenues sur salaire.
-                    </p>
-                </c:if>
-            </div>
-        </c:if>
+        <!-- Informations complémentaires -->
+        <div class="info-complementaires">
+            <h3>ℹ️ Informations complémentaires</h3>
+            <p><strong>Primes :</strong> Les primes incluent les heures supplémentaires, bonus de performance, primes exceptionnelles, etc.</p>
+            <p><strong>Déductions :</strong> Les déductions peuvent inclure les retards, absences non justifiées, ou autres retenues sur salaire.</p>
+        </div>
+        <!-- DEBUG : Nombre d'absences 
+<p style="color: red; font-weight: bold;">
+    🔍 DEBUG : ${not empty absencesMois ? absencesMois.size() : 0} absence(s) trouvée(s)
+</p>-->
+        <!-- Section Absences du mois - CORRECTION ICI : changer absencesMois en absences -->
+        <c:if test="${absencesMois != null && absencesMois.size() > 0}">
+    <div class="absences-section">
+        <h3>📅 Absences du mois</h3>
+        <table class="absences-table">
+            <thead>
+                <tr>
+                    <th>Date début</th>
+                    <th>Date fin</th>
+                    <th>Type</th>
+                    <th>Jours</th>
+                    <th>Motif</th>
+                </tr>
+            </thead>
+            <tbody>
+                <c:forEach var="abs" items="${absencesMois}">
+                    <tr>
+                        <td><fmt:formatDate value="${abs.dateDebut}" pattern="dd/MM/yyyy"/></td>
+                        <td><fmt:formatDate value="${abs.dateFin}" pattern="dd/MM/yyyy"/></td>
+                        <td>
+                            <c:choose>
+                                <c:when test="${abs.typeAbsence == 'CONGE'}">
+                                    <span class="badge-conge">✅ Congé</span>
+                                </c:when>
+                                <c:when test="${abs.typeAbsence == 'MALADIE'}">
+                                    <span class="badge-maladie">🏥 Maladie</span>
+                                </c:when>
+                                <c:otherwise>
+                                    <span class="badge-injustifiee">❌ Absence injustifiée</span>
+                                </c:otherwise>
+                            </c:choose>
+                        </td>
+                        <td>
+                            ${(abs.dateFin.time - abs.dateDebut.time) / (1000 * 60 * 60 * 24) + 1} jour(s)
+                        </td>
+                        <td>${abs.motif != null ? abs.motif : '-'}</td>
+                    </tr>
+                </c:forEach>
+            </tbody>
+        </table>
+        <p class="absences-note">
+            ⚠️ <strong>Important :</strong> Seules les absences injustifiées sont déduites du salaire (200€ par jour d'absence).
+        </p>
+    </div>
+</c:if>
         
-        <!-- Section signatures -->
+        <!-- Signatures -->
         <div class="signature-section">
             <div class="signature-box">
-                <p><strong>L'Employeur</strong></p>
-                <div class="signature-line"></div>
-                <p>Date et Signature</p>
+                <h4>L'Employeur</h4>
+                <div class="signature-line">Date et Signature</div>
             </div>
-            
             <div class="signature-box">
-                <p><strong>L'Employé</strong></p>
-                <div class="signature-line"></div>
-                <p>Date et Signature</p>
+                <h4>L'Employé</h4>
+                <div class="signature-line">Date et Signature</div>
             </div>
         </div>
         
-        <!-- Pied de page -->
-        <div class="fiche-footer">
-            <p><strong>Ce document est confidentiel et destiné uniquement à son bénéficiaire.</strong></p>
-            <p>CY-RH - Système de Gestion des Ressources Humaines</p>
-            <p>Fiche générée le <fmt:formatDate value="${fiche.dateGeneration}" pattern="dd/MM/yyyy à HH:mm"/></p>
+        <!-- Footer -->
+        <div class="footer">
+            Ce document est confidentiel et destiné uniquement à son bénéficiaire.<br>
+            CY-RH - Système de Gestion des Ressources Humaines<br>
+            Fiche générée le <fmt:formatDate value="${fiche.dateGeneration}" pattern="dd/MM/yyyy 'à' HH:mm"/>
         </div>
     </div>
-    
-    <script>
-        // Fonction pour imprimer automatiquement au chargement (optionnel)
-        // window.onload = function() { window.close(); };
-    </script>
 </body>
 </html>
