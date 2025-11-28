@@ -1,6 +1,7 @@
 # CY-RH - Guide d'Installation Rapide
 
 ## Prérequis
+- Java 21
 - MySQL Workbench
 - Eclipse IDE
 - Apache Tomcat 10
@@ -11,7 +12,9 @@
 ## Étape 1 : Base de Données
 
 1. Ouvrir MySQL Workbench
-2. Se connecter avec le mot de passe : `1234`
+2. Configurer la connexion MySQL
+   - **Option A :** Créer un utilisateur `root` avec le mot de passe `1234`
+   - **Option B :** Modifier les informations de connexion dans `src/main/resources/hibernate.cfg.xml` (lignes 14 et 15) avec vos identifiants MySQL
 3. Exécuter le script `cy_rh_bdd.sql`
    - File → Open SQL Script → Sélectionner `cy_rh_bdd.sql`
    - Cliquer sur l'éclair pour exécuter
