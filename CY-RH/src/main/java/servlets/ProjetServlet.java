@@ -1444,6 +1444,7 @@ public class ProjetServlet extends HttpServlet {
         // Filtrer les employés disponibles selon les règles :
         // 1. Ne pas afficher le chef de projet
         // 2. Ne pas afficher les employés déjà affectés
+        // 3. Filtrer selon le département du projet
         List<Employer> employesDisponibles = new ArrayList<>();
         if (tousEmployes != null) {
             for (Employer emp : tousEmployes) {
@@ -1624,4 +1625,5 @@ public class ProjetServlet extends HttpServlet {
         request.setAttribute("projets", projetsDisponibles);
         request.getRequestDispatcher("/WEB-INF/views/projets/affectation-rapide.jsp").forward(request, response);
     }
+
 }
