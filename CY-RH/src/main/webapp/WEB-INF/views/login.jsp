@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Connexion - CY-RH</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css?v=1.0">
     <style>
         .login-container {
             max-width: 400px;

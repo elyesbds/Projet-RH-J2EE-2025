@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <title>${departement != null ? 'Modifier' : 'Ajouter'} un Département - CY-RH</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css?v=1.0">
 </head>
 <body>
 <%@ include file="../includes/header.jsp" %>
