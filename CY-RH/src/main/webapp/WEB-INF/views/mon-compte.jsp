@@ -165,7 +165,7 @@
         <div class="alert alert-success">
                 ${sessionScope.successMessage}
         </div>
-        <c:remove var="successMessage" scope="session" />
+        <c:remove var="successMessage" scope="session"/>
     </c:if>
 
     <!-- Bouton modifier -->
@@ -207,13 +207,13 @@
                 <strong>Salaire de base :</strong>
                 <span>
                                         <fmt:formatNumber value="${user.salaireBase}" type="currency"
-                                                          currencySymbol="€" />
+                                                          currencySymbol="€"/>
                                     </span>
             </div>
             <div class="info-item">
                 <strong>Date d'embauche :</strong>
                 <span>
-                                        <fmt:formatDate value="${user.dateEmbauche}" pattern="dd/MM/yyyy" />
+                                        <fmt:formatDate value="${user.dateEmbauche}" pattern="dd/MM/yyyy"/>
                                     </span>
             </div>
             <div class="info-item">
@@ -300,7 +300,7 @@
                             <!-- Salaire Base -->
                             <td class="text-right">
                                 <fmt:formatNumber value="${fiche.salaireBase}"
-                                                  pattern="#,##0.00" /> €
+                                                  pattern="#,##0.00"/> €
                             </td>
 
                             <!-- Primes -->
@@ -310,7 +310,7 @@
                                                                 <span class="prime-positive">
                                                                     +
                                                                     <fmt:formatNumber value="${fiche.primes}"
-                                                                                      pattern="#,##0.00" /> €
+                                                                                      pattern="#,##0.00"/> €
                                                                 </span>
                                     </c:when>
                                     <c:otherwise>
@@ -326,7 +326,7 @@
                                                                 <span class="deduction-negative">
                                                                     -
                                                                     <fmt:formatNumber value="${fiche.deductions}"
-                                                                                      pattern="#,##0.00" /> €
+                                                                                      pattern="#,##0.00"/> €
                                                                 </span>
                                     </c:when>
                                     <c:otherwise>
@@ -339,24 +339,24 @@
                             <td class="text-right">
                                                         <span class="net-amount">
                                                             <fmt:formatNumber value="${fiche.netAPayer}"
-                                                                              pattern="#,##0.00" /> €
+                                                                              pattern="#,##0.00"/> €
                                                         </span>
                             </td>
 
                             <!-- Date Génération -->
                             <td>
                                 <fmt:formatDate value="${fiche.dateGeneration}"
-                                                pattern="dd/MM/yyyy" />
+                                                pattern="dd/MM/yyyy"/>
                             </td>
 
-						<!-- Action : Bouton Imprimer -->
-						<td>
-						    <a href="${pageContext.request.contextPath}/fiches-paie/voir?id=${fiche.id}&from=mon-compte"
-						       class="btn-print" 
-						       title="Voir et imprimer cette fiche">
-						        Imprimer
-						    </a>
-						</td>
+                            <!-- Action : Bouton Imprimer -->
+                            <td>
+                                <a href="${pageContext.request.contextPath}/fiches-paie/voir?id=${fiche.id}&from=mon-compte"
+                                   class="btn-print"
+                                   title="Voir et imprimer cette fiche">
+                                    Imprimer
+                                </a>
+                            </td>
                         </tr>
                     </c:forEach>
                     </tbody>
@@ -373,7 +373,7 @@
                         <div class="stat-box">
                             <div class="stat-value">
                                 <fmt:formatNumber value="${fichesDePaie[0].netAPayer}"
-                                                  pattern="#,##0" /> €
+                                                  pattern="#,##0"/> €
                             </div>
                             <div class="stat-label">Dernier salaire</div>
                         </div>

@@ -5,6 +5,7 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 import utils.HibernateUtil;
+
 import java.util.List;
 import java.util.Date;
 
@@ -12,7 +13,7 @@ import java.util.Date;
  * DAO pour gérer les absences des employés
  */
 public class AbsenceDAO {
-    
+
     /**
      * Créer une nouvelle absence
      */
@@ -38,7 +39,7 @@ public class AbsenceDAO {
             return false;
         }
     }
-    
+
     /**
      * Récupérer une absence par son ID
      */
@@ -50,7 +51,7 @@ public class AbsenceDAO {
             return null;
         }
     }
-    
+
     /**
      * Récupérer toutes les absences
      * (Pour l'admin)
@@ -64,7 +65,7 @@ public class AbsenceDAO {
             return null;
         }
     }
-    
+
     /**
      * Mettre à jour une absence
      */
@@ -90,7 +91,7 @@ public class AbsenceDAO {
             return false;
         }
     }
-    
+
     /**
      * Supprimer une absence
      */
@@ -113,7 +114,7 @@ public class AbsenceDAO {
             return false;
         }
     }
-    
+
     /**
      * Récupérer les absences d'un employé
      * (Pour qu'un employé voie ses propres absences)
@@ -129,7 +130,7 @@ public class AbsenceDAO {
             return null;
         }
     }
-    
+
     /**
      * Vérifier si une absence chevauche une autre pour le même employé
      * (Pour éviter les doublons de périodes)
@@ -137,10 +138,10 @@ public class AbsenceDAO {
     public boolean checkChevauchement(Integer idEmployer, Date dateDebut, Date dateFin, Integer excludeId) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             String hql = "SELECT COUNT(*) FROM Absence WHERE idEmployer = :idEmp " +
-                        "AND id != :excludeId " +
-                        "AND ((dateDebut BETWEEN :debut AND :fin) " +
-                        "OR (dateFin BETWEEN :debut AND :fin) " +
-                        "OR (dateDebut <= :debut AND dateFin >= :fin))";
+                    "AND id != :excludeId " +
+                    "AND ((dateDebut BETWEEN :debut AND :fin) " +
+                    "OR (dateFin BETWEEN :debut AND :fin) " +
+                    "OR (dateDebut <= :debut AND dateFin >= :fin))";
             Query<Long> query = session.createQuery(hql, Long.class);
             query.setParameter("idEmp", idEmployer);
             query.setParameter("excludeId", excludeId != null ? excludeId : -1);
@@ -153,7 +154,7 @@ public class AbsenceDAO {
             return false;
         }
     }
-    
+
     /**
      * Récupérer les absences par type
      */
@@ -168,7 +169,7 @@ public class AbsenceDAO {
             return null;
         }
     }
-    
+
     /**
      * Récupérer les absences des employés d'un département
      * (Pour le chef de département)
@@ -176,10 +177,10 @@ public class AbsenceDAO {
     public List<Absence> getByDepartement(Integer idDepartement) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             String sql = "SELECT a.* FROM Absence a " +
-                        "JOIN Employer e ON a.Id_employer = e.Id " +
-                        "WHERE e.Id_departement = :idDept " +
-                        "ORDER BY a.Date_debut DESC";
-            
+                    "JOIN Employer e ON a.Id_employer = e.Id " +
+                    "WHERE e.Id_departement = :idDept " +
+                    "ORDER BY a.Date_debut DESC";
+
             return session.createNativeQuery(sql, Absence.class)
                     .setParameter("idDept", idDepartement)
                     .list();
@@ -188,7 +189,7 @@ public class AbsenceDAO {
             return null;
         }
     }
-    
+
     /**
      * Récupérer les absences des employés d'un projet
      * (Pour le chef de projet)
@@ -196,10 +197,10 @@ public class AbsenceDAO {
     public List<Absence> getByProjet(Integer idProjet) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             String sql = "SELECT a.* FROM Absence a " +
-                        "JOIN Affectation_projet ap ON a.Id_employer = ap.Id_employer " +
-                        "WHERE ap.Id_projet = :idProj AND ap.Date_fin_affectation IS NULL " +
-                        "ORDER BY a.Date_debut DESC";
-            
+                    "JOIN Affectation_projet ap ON a.Id_employer = ap.Id_employer " +
+                    "WHERE ap.Id_projet = :idProj AND ap.Date_fin_affectation IS NULL " +
+                    "ORDER BY a.Date_debut DESC";
+
             return session.createNativeQuery(sql, Absence.class)
                     .setParameter("idProj", idProjet)
                     .list();
@@ -208,7 +209,7 @@ public class AbsenceDAO {
             return null;
         }
     }
-    
+
     /**
      * Récupérer les absences d'un employé pour une période donnée
      * (Utile pour le calcul des fiches de paie)
@@ -216,9 +217,9 @@ public class AbsenceDAO {
     public List<Absence> getByEmployerAndPeriode(Integer idEmployer, Date dateDebut, Date dateFin) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             String hql = "FROM Absence WHERE idEmployer = :idEmp " +
-                        "AND ((dateDebut BETWEEN :debut AND :fin) " +
-                        "OR (dateFin BETWEEN :debut AND :fin) " +
-                        "OR (dateDebut <= :debut AND dateFin >= :fin))";
+                    "AND ((dateDebut BETWEEN :debut AND :fin) " +
+                    "OR (dateFin BETWEEN :debut AND :fin) " +
+                    "OR (dateDebut <= :debut AND dateFin >= :fin))";
             Query<Absence> query = session.createQuery(hql, Absence.class);
             query.setParameter("idEmp", idEmployer);
             query.setParameter("debut", dateDebut);
@@ -229,7 +230,7 @@ public class AbsenceDAO {
             return null;
         }
     }
-    
+
     /**
      * Compter le nombre de jours d'absence pour un employé sur une période
      * (Pour calculer les déductions)
@@ -237,7 +238,7 @@ public class AbsenceDAO {
     public int countJoursAbsence(Integer idEmployer, Date dateDebut, Date dateFin) {
         List<Absence> absences = getByEmployerAndPeriode(idEmployer, dateDebut, dateFin);
         int totalJours = 0;
-        
+
         if (absences != null) {
             for (Absence abs : absences) {
                 // Calculer le nombre de jours d'absence
@@ -246,7 +247,7 @@ public class AbsenceDAO {
                 totalJours += jours;
             }
         }
-        
+
         return totalJours;
     }
 }

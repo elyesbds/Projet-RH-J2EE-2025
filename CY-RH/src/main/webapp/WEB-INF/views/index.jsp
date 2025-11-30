@@ -3,7 +3,7 @@
 
 <%-- Vérification de la connexion : si pas connecté, rediriger vers login --%>
 <c:if test="${empty sessionScope.user}">
-    <c:redirect url="/login" />
+    <c:redirect url="/login"/>
 </c:if>
 
 <!DOCTYPE html>

@@ -59,6 +59,7 @@ public class LoginServlet extends HttpServlet {
         Employer user = employerDAO.getByEmail(email.trim());
         
      // DEBUG - Afficher les infos
+        /*
         if (user != null) {
             System.out.println("=== DEBUG LOGIN ===");
             System.out.println("User trouvé: " + user.getEmail());
@@ -71,7 +72,7 @@ public class LoginServlet extends HttpServlet {
             System.out.println("=== DEBUG LOGIN ===");
             System.out.println("Aucun user trouvé pour email: " + email);
             System.out.println("==================");
-        }
+        }*/
 
         if (user != null && PasswordUtil.verifyPassword(password, user.getPassword())) {
             // Connexion réussie

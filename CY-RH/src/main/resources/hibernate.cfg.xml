@@ -12,7 +12,7 @@
 
 
         <property name="hibernate.connection.username">root</property> 
-        <property name="hibernate.connection.password">1234</property> <!-- Mot de passe de la base de données -->
+        <property name="hibernate.connection.password">alex</property> <!-- Mot de passe de la base de données -->
         
         <!-- Dialecte MySQL -->
         <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>

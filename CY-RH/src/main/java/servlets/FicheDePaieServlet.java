@@ -17,6 +17,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
@@ -28,9 +29,12 @@ import java.util.Date;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Collections;
+
 import dao.AbsenceDAO;
 import models.Absence;
+
 import java.util.Calendar;
+
 import utils.ValidationUtil;
 
 /**
@@ -980,7 +984,7 @@ public class FicheDePaieServlet extends HttpServlet {
      * Calculer les déductions basées sur les absences injustifiées du mois
      */
     private BigDecimal calculerDeductionsAbsences(Integer idEmployer, Integer mois, Integer annee,
-            BigDecimal salaireBase) {
+                                                  BigDecimal salaireBase) {
         try {
             // Créer les dates de début et fin du mois
             Calendar cal = Calendar.getInstance();

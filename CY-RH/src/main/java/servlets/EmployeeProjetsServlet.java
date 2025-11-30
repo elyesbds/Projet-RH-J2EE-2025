@@ -12,8 +12,10 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.util.*;
+
 import org.hibernate.Session;
 import utils.HibernateUtil;
 
@@ -229,9 +231,6 @@ public class EmployeeProjetsServlet extends HttpServlet {
 
     /**
      * Retirer l'employé d'un projet
-     */
-    /**
-     * Retirer l'employé d'un projet (avec gestion automatique des rôles)
      */
     private void retirerProjet(HttpServletRequest request, HttpServletResponse response)
             throws IOException {

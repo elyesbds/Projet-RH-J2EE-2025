@@ -5,6 +5,7 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 import utils.HibernateUtil;
+
 import java.util.List;
 
 /**
@@ -70,7 +71,7 @@ public class EmployerDAO {
             // Validation des paramètres pour éviter les injections SQL
             String validSortBy = sortBy;
             if (!sortBy.matches("^[a-zA-Z]+$")) {
-                validSortBy = "id"; 
+                validSortBy = "id";
             }
 
             String validOrder = order != null && order.equalsIgnoreCase("DESC") ? "DESC" : "ASC";
@@ -79,7 +80,7 @@ public class EmployerDAO {
             return session.createQuery(hql, Employer.class).list();
         } catch (Exception e) {
             e.printStackTrace();
-            return getAll(); 
+            return getAll();
         }
     }
 
@@ -247,7 +248,7 @@ public class EmployerDAO {
             // Exécuter la requête
             Query<Employer> query = session.createQuery(hql, Employer.class);
 
-            
+
             if (needsLike) {
                 query.setParameter("value", "%" + value.toLowerCase() + "%");
             } else if (type.equalsIgnoreCase("departement")) {

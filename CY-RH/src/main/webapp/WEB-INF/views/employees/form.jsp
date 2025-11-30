@@ -8,13 +8,13 @@
     <meta charset="UTF-8">
     <title>${employee != null ? 'Modifier' : 'Ajouter'} un Employé - CY-RH</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css?v=1.0">
-                    <style>
-                    /* Icônes de calendrier en doré */
-                    input[type="date"]::-webkit-calendar-picker-indicator {
-                        filter: brightness(0) saturate(100%) invert(71%) sepia(45%) saturate(653%) hue-rotate(3deg) brightness(92%) contrast(87%);
-                        cursor: pointer;
-                    }
-                </style>
+    <style>
+        /* Icônes de calendrier en doré */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: brightness(0) saturate(100%) invert(71%) sepia(45%) saturate(653%) hue-rotate(3deg) brightness(92%) contrast(87%);
+            cursor: pointer;
+        }
+    </style>
 </head>
 
 <body>
@@ -151,7 +151,8 @@
                     </option>
                     <option value="CONFIRME" ${(employee != null && employee.grade == 'CONFIRME') ||
                             (employee == null && param.grade == 'CONFIRME') ? 'selected' : ''}>
-                        Confirmé</option>
+                        Confirmé
+                    </option>
                     <option value="SENIOR" ${(employee != null && employee.grade == 'SENIOR') ||
                             (employee == null && param.grade == 'SENIOR') ? 'selected' : ''}>Senior
                     </option>
@@ -160,7 +161,8 @@
                     </option>
                     <option value="DIRECTEUR" ${(employee != null && employee.grade == 'DIRECTEUR') ||
                             (employee == null && param.grade == 'DIRECTEUR') ? 'selected' : ''}>
-                        Directeur</option>
+                        Directeur
+                    </option>
                 </select>
             </div>
         </div>
@@ -202,16 +204,20 @@
                 <select id="role" name="role" required>
                     <option value="EMPLOYE" ${(employee == null && (param.role == 'EMPLOYE' || empty param.role)) ||
                             (employee != null && employee.role == 'EMPLOYE')
-                            ? 'selected' : ''}>Employé</option>
+                            ? 'selected' : ''}>Employé
+                    </option>
                     <option value="CHEF_PROJET" ${(employee == null && param.role == 'CHEF_PROJET') ||
                             (employee != null && employee.role == 'CHEF_PROJET') ? 'selected' : ''}>
-                        Chef de Projet</option>
+                        Chef de Projet
+                    </option>
                     <option value="CHEF_DEPT" ${(employee == null && param.role == 'CHEF_DEPT') ||
                             (employee != null && employee.role == 'CHEF_DEPT') ? 'selected' : ''}>
-                        Chef de Département</option>
+                        Chef de Département
+                    </option>
                     <option value="ADMIN" ${(employee == null && param.role == 'ADMIN') ||
                             (employee != null && employee.role == 'ADMIN') ? 'selected' : ''}>
-                        Administrateur</option>
+                        Administrateur
+                    </option>
                 </select>
             </div>
         </div>

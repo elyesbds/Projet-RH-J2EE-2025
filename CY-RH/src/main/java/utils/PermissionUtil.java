@@ -9,7 +9,7 @@ import jakarta.servlet.http.HttpSession;
  * Seulement 3 méthodes de base -  vérifies le rôle directement dans les servlets
  */
 public class PermissionUtil {
-    
+
     /**
      * Récupérer l'utilisateur connecté
      */
@@ -20,7 +20,7 @@ public class PermissionUtil {
         }
         return null;
     }
-    
+
     /**
      * Vérifier si l'utilisateur est un administrateur
      * L'admin peut TOUT faire
@@ -29,7 +29,7 @@ public class PermissionUtil {
         Employer user = getLoggedUser(request);
         return user != null && "ADMIN".equals(user.getRole());
     }
-    
+
     /**
      * Vérifier si l'utilisateur est chef de département
      */
@@ -37,7 +37,7 @@ public class PermissionUtil {
         Employer user = getLoggedUser(request);
         return user != null && "CHEF_DEPT".equals(user.getRole());
     }
-    
+
     /**
      * Vérifier si l'utilisateur est chef de projet
      */

@@ -14,6 +14,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -110,7 +111,7 @@ public class DepartementServlet extends HttpServlet {
             } else {
                 // S'il n'a pas de département, afficher un message
                 request.setAttribute("error", "Vous n'êtes rattaché à aucun département actuellement.");
-                request.getRequestDispatcher("/WEB-INF/views/departements/no-department.jsp").forward(request,
+                request.getRequestDispatcher("/WEB-INF/views/departements/no-departement.jsp").forward(request,
                         response);
             }
             return;
@@ -124,7 +125,7 @@ public class DepartementServlet extends HttpServlet {
                         request.getContextPath() + "/departements/members?id=" + currentUser.getIdDepartement());
             } else {
                 request.setAttribute("error", "Vous n'êtes rattaché à aucun département actuellement.");
-                request.getRequestDispatcher("/WEB-INF/views/departements/no-department.jsp").forward(request,
+                request.getRequestDispatcher("/WEB-INF/views/departements/no-departement.jsp").forward(request,
                         response);
             }
             return;

@@ -7,9 +7,9 @@ import org.hibernate.cfg.Configuration;
  * Classe utilitaire pour gérer la SessionFactory Hibernate
  */
 public class HibernateUtil {
-    
+
     private static SessionFactory sessionFactory;
-    
+
     // Bloc statique pour initialiser la SessionFactory au démarrage
     static {
         try {
@@ -21,16 +21,16 @@ public class HibernateUtil {
             throw new ExceptionInInitializerError(e);
         }
     }
-    
+
     /**
      * Récupérer la SessionFactory
      */
     public static SessionFactory getSessionFactory() {
         return sessionFactory;
     }
-    
+
     /**
-     * Fermer la SessionFactory 
+     * Fermer la SessionFactory
      */
     public static void shutdown() {
         if (sessionFactory != null) {

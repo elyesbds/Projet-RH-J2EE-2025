@@ -14,18 +14,18 @@
             font-family: 'Segoe UI', Arial, sans-serif;
             color: #e0e0e0;
             padding: 20px;
-            
+
         }
 
         .fiche-container {
-    max-width: 900px;
-    margin: 30px auto 0 auto; /* Ajoute 30px en haut */
-    background: linear-gradient(135deg, #1e1e1e, #1a1a1a);
-    padding: 40px;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(212, 175, 55, 0.2);
-    border-radius: 8px;
-}
+            max-width: 900px;
+            margin: 30px auto 0 auto; /* Ajoute 30px en haut */
+            background: linear-gradient(135deg, #1e1e1e, #1a1a1a);
+            padding: 40px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 8px;
+        }
 
         .header {
             text-align: center;
@@ -160,222 +160,245 @@
         }
 
         .info-complementaires {
-    background: radial-gradient(circle at 15% 20%, rgba(212, 175, 55, 0.08), transparent 45%), #151515;
-    padding: 20px;
-    border-radius: 8px;
-    margin: 30px 0 20px 0; /* Réduit la marge */
-    border-left: 4px solid #d4af37;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-}
+            background: radial-gradient(circle at 15% 20%, rgba(212, 175, 55, 0.08), transparent 45%), #151515;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 30px 0 20px 0; /* Réduit la marge */
+            border-left: 4px solid #d4af37;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
 
-.absences-section {
-    margin: 20px 0; /* Réduit la marge */
-    padding: 20px;
-    background: radial-gradient(circle at 15% 20%, rgba(255, 152, 0, 0.08), transparent 45%), #151515;
-    border-left: 4px solid #ff9800;
-    border-radius: 8px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-}
+        .absences-section {
+            margin: 20px 0; /* Réduit la marge */
+            padding: 20px;
+            background: radial-gradient(circle at 15% 20%, rgba(255, 152, 0, 0.08), transparent 45%), #151515;
+            border-left: 4px solid #ff9800;
+            border-radius: 8px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
 
-.signature-section {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 50px;
-    margin-top: 30px; /* Réduit de 50px à 30px */
-    page-break-inside: avoid; /* Évite la coupure en impression */
-}
+        .signature-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            margin-top: 30px; /* Réduit de 50px à 30px */
+            page-break-inside: avoid; /* Évite la coupure en impression */
+        }
 
-.footer {
-    text-align: center;
-    margin-top: 30px; /* Réduit de 50px à 30px */
-    padding-top: 20px;
-    border-top: 1px solid #333;
-    color: #777;
-    font-size: 12px;
-    page-break-inside: avoid; /* Évite la coupure en impression */
-}
+        .footer {
+            text-align: center;
+            margin-top: 30px; /* Réduit de 50px à 30px */
+            padding-top: 20px;
+            border-top: 1px solid #333;
+            color: #777;
+            font-size: 12px;
+            page-break-inside: avoid; /* Évite la coupure en impression */
+        }
 
-/* Amélioration pour l'impression */
-@media print {
-    @page {
-        margin: 1.5cm;
-        size: A4;
-    }
+        /* Amélioration pour l'impression */
+        @media print {
+            @page {
+                margin: 1.5cm;
+                size: A4;
+            }
 
-    /* Reset global pour forcer le fond blanc et texte noir */
-    body, html {
-        background-color: #ffffff !important;
-        color: #000000 !important;
-        font-family: 'Segoe UI', Arial, sans-serif;
-        font-size: 11pt;
-        margin: 0;
-        padding: 0;
-    }
+            /* Reset global pour forcer le fond blanc et texte noir */
+            body, html {
+                background-color: #ffffff !important;
+                color: #000000 !important;
+                font-family: 'Segoe UI', Arial, sans-serif;
+                font-size: 11pt;
+                margin: 0;
+                padding: 0;
+            }
 
-    /* Masquer les éléments de navigation */
-    .action-bar, nav, header, button, .btn, .navbar, a {
-        display: none !important;
-    }
+            /* Masquer les éléments de navigation */
+            .action-bar, nav, header, button, .btn, .navbar, a {
+                display: none !important;
+            }
 
-    /* Conteneur principal sans ombres ni bordures superflues */
-    .fiche-container {
-        width: 100% !important;
-        max-width: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        border: none !important;
-        box-shadow: none !important;
-        background: white !important;
-    }
+            /* Conteneur principal sans ombres ni bordures superflues */
+            .fiche-container {
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                border: none !important;
+                box-shadow: none !important;
+                background: white !important;
+            }
 
-    /* En-tête épuré */
-    .header {
-        text-align: center;
-        margin-bottom: 30px;
-        border-bottom: 2px solid #d4af37; /* Trait doré conservé */
-        padding-bottom: 15px;
-    }
-    .header h1 { 
-        color: #333 !important; 
-        font-size: 14pt; 
-        margin: 0; 
-        font-weight: normal; 
-    }
-    .header h2 { 
-        color: #000 !important; 
-        font-size: 26pt; 
-        margin: 10px 0; 
-        text-shadow: none !important; 
-        text-transform: uppercase;
-    }
-    .periode { color: #555 !important; font-size: 12pt; }
+            /* En-tête épuré */
+            .header {
+                text-align: center;
+                margin-bottom: 30px;
+                border-bottom: 2px solid #d4af37; /* Trait doré conservé */
+                padding-bottom: 15px;
+            }
 
-    /* Blocs Employeur/Employé côte à côte (Bordures fines) */
-    .info-section {
-        display: flex !important;
-        flex-direction: row;
-        justify-content: space-between;
-        gap: 20px;
-        margin-bottom: 25px;
-    }
+            .header h1 {
+                color: #333 !important;
+                font-size: 14pt;
+                margin: 0;
+                font-weight: normal;
+            }
 
-    .info-box {
-        flex: 1;
-        background: transparent !important;
-        border: 1px solid #000 !important; /* Cadre noir fin */
-        border-radius: 4px;
-        padding: 15px !important;
-        box-shadow: none !important;
-    }
+            .header h2 {
+                color: #000 !important;
+                font-size: 26pt;
+                margin: 10px 0;
+                text-shadow: none !important;
+                text-transform: uppercase;
+            }
 
-    .info-box h3 {
-        color: #000 !important;
-        font-size: 12pt;
-        background-color: #f0f0f0 !important; /* Gris très léger pour le titre */
-        margin: -15px -15px 15px -15px;
-        padding: 8px 15px;
-        border-bottom: 1px solid #000;
-        text-transform: uppercase;
-    }
+            .periode {
+                color: #555 !important;
+                font-size: 12pt;
+            }
 
-    .info-row {
-        border-bottom: 1px dotted #ccc;
-        padding: 6px 0;
-    }
-    .info-label { color: #444 !important; }
-    .info-value { color: #000 !important; font-weight: bold; }
+            /* Blocs Employeur/Employé côte à côte (Bordures fines) */
+            .info-section {
+                display: flex !important;
+                flex-direction: row;
+                justify-content: space-between;
+                gap: 20px;
+                margin-bottom: 25px;
+            }
 
-    /* Tableau des salaires clair */
-    .salaire-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin: 20px 0;
-        border: 1px solid #000;
-    }
+            .info-box {
+                flex: 1;
+                background: transparent !important;
+                border: 1px solid #000 !important; /* Cadre noir fin */
+                border-radius: 4px;
+                padding: 15px !important;
+                box-shadow: none !important;
+            }
 
-    .salaire-table th {
-        background: #f8f8f8 !important; /* Fond gris clair */
-        color: #000 !important;
-        border-bottom: 2px solid #d4af37 !important; /* Touche dorée */
-        padding: 10px;
-        font-weight: bold;
-        text-transform: uppercase;
-        font-size: 10pt;
-    }
+            .info-box h3 {
+                color: #000 !important;
+                font-size: 12pt;
+                background-color: #f0f0f0 !important; /* Gris très léger pour le titre */
+                margin: -15px -15px 15px -15px;
+                padding: 8px 15px;
+                border-bottom: 1px solid #000;
+                text-transform: uppercase;
+            }
 
-    .salaire-table td {
-        border-bottom: 1px solid #ddd;
-        padding: 8px 10px;
-        color: #000 !important;
-    }
+            .info-row {
+                border-bottom: 1px dotted #ccc;
+                padding: 6px 0;
+            }
 
-    /* Net à payer encadré proprement */
-    .net-payer {
-        background: transparent !important;
-        color: #000 !important;
-    }
-    .net-payer td {
-        border-top: 2px solid #000 !important;
-        font-size: 16pt;
-        font-weight: 900;
-        padding: 15px 10px;
-        background-color: #fff8e1 !important; /* Fond doré très pâle optionnel */
-    }
+            .info-label {
+                color: #444 !important;
+            }
 
-    /* Section Infos complémentaires */
-    .info-complementaires {
-        border: 1px solid #ccc !important;
-        background: none !important;
-        box-shadow: none !important;
-        margin-top: 20px;
-        padding: 15px;
-        page-break-inside: avoid;
-    }
-    .info-complementaires h3 { color: #000 !important; margin-top: 0; }
+            .info-value {
+                color: #000 !important;
+                font-weight: bold;
+            }
 
-    /* Signatures */
-    .signature-section {
-        margin-top: 40px;
-        display: flex;
-        justify-content: space-between;
-        page-break-inside: avoid;
-    }
-    .signature-box { width: 40%; }
-    .signature-line {
-        margin-top: 50px;
-        border-top: 1px solid #000;
-        padding-top: 5px;
-        font-size: 10pt;
-    }
+            /* Tableau des salaires clair */
+            .salaire-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 20px 0;
+                border: 1px solid #000;
+            }
 
-    /* Footer bas de page */
-    .footer {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        text-align: center;
-        font-size: 8pt;
-        color: #666 !important;
-        background: white;
-        padding-top: 10px;
-        border-top: 1px solid #eee;
-    }
-}
-/* Masquer les boutons et header lors de l'impression */
-@media print {
-    button {
-        display: none !important;
-    }
-    
-    header, nav {
-        display: none !important;
-    }
-    
-    body {
-        background: white !important;
-    }
-}
+            .salaire-table th {
+                background: #f8f8f8 !important; /* Fond gris clair */
+                color: #000 !important;
+                border-bottom: 2px solid #d4af37 !important; /* Touche dorée */
+                padding: 10px;
+                font-weight: bold;
+                text-transform: uppercase;
+                font-size: 10pt;
+            }
+
+            .salaire-table td {
+                border-bottom: 1px solid #ddd;
+                padding: 8px 10px;
+                color: #000 !important;
+            }
+
+            /* Net à payer encadré proprement */
+            .net-payer {
+                background: transparent !important;
+                color: #000 !important;
+            }
+
+            .net-payer td {
+                border-top: 2px solid #000 !important;
+                font-size: 16pt;
+                font-weight: 900;
+                padding: 15px 10px;
+                background-color: #fff8e1 !important; /* Fond doré très pâle optionnel */
+            }
+
+            /* Section Infos complémentaires */
+            .info-complementaires {
+                border: 1px solid #ccc !important;
+                background: none !important;
+                box-shadow: none !important;
+                margin-top: 20px;
+                padding: 15px;
+                page-break-inside: avoid;
+            }
+
+            .info-complementaires h3 {
+                color: #000 !important;
+                margin-top: 0;
+            }
+
+            /* Signatures */
+            .signature-section {
+                margin-top: 40px;
+                display: flex;
+                justify-content: space-between;
+                page-break-inside: avoid;
+            }
+
+            .signature-box {
+                width: 40%;
+            }
+
+            .signature-line {
+                margin-top: 50px;
+                border-top: 1px solid #000;
+                padding-top: 5px;
+                font-size: 10pt;
+            }
+
+            /* Footer bas de page */
+            .footer {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                text-align: center;
+                font-size: 8pt;
+                color: #666 !important;
+                background: white;
+                padding-top: 10px;
+                border-top: 1px solid #eee;
+            }
+        }
+
+        /* Masquer les boutons et header lors de l'impression */
+        @media print {
+            button {
+                display: none !important;
+            }
+
+            header, nav {
+                display: none !important;
+            }
+
+            body {
+                background: white !important;
+            }
+        }
     </style>
 </head>
 
@@ -383,36 +406,35 @@
 <%@ include file="../includes/header.jsp" %>
 
 
-
 <div class="fiche-container">
     <!-- En-tête -->
     <div class="header">
         <h1>CY-RH - Gestion des Ressources Humaines</h1>
         <h2>FICHE DE PAIE</h2>
-        
+
         <!-- Boutons d'action -->
-		<div style="text-align: center; margin: 20px 0;">
-		    <c:choose>
-		        <c:when test="${param.from == 'mon-compte'}">
-		            <button onclick="window.location.href='${pageContext.request.contextPath}/mon-compte'" 
-		                    style="background: #95a5a6; color: white; padding: 12px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; margin-right: 10px;">
-		                ← Retour à Mon Compte
-		            </button>
-		        </c:when>
-		        <c:otherwise>
-		            <button onclick="window.location.href='${pageContext.request.contextPath}/fiches-paie'" 
-		                    style="background: #95a5a6; color: white; padding: 12px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; margin-right: 10px;">
-		                ← Retour à la liste
-		            </button>
-		        </c:otherwise>
-		    </c:choose>
-		    
-		    <button onclick="window.print()" 
-		            style="background: #d4af37; color: #1a1a1a; padding: 12px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; font-weight: bold;">
-		        🖨 Imprimer
-		    </button>
-		</div>
-		   <p class="periode">
+        <div style="text-align: center; margin: 20px 0;">
+            <c:choose>
+                <c:when test="${param.from == 'mon-compte'}">
+                    <button onclick="window.location.href='${pageContext.request.contextPath}/mon-compte'"
+                            style="background: #95a5a6; color: white; padding: 12px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; margin-right: 10px;">
+                        ← Retour à Mon Compte
+                    </button>
+                </c:when>
+                <c:otherwise>
+                    <button onclick="window.location.href='${pageContext.request.contextPath}/fiches-paie'"
+                            style="background: #95a5a6; color: white; padding: 12px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; margin-right: 10px;">
+                        ← Retour à la liste
+                    </button>
+                </c:otherwise>
+            </c:choose>
+
+            <button onclick="window.print()"
+                    style="background: #d4af37; color: #1a1a1a; padding: 12px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; font-weight: bold;">
+                Imprimer
+            </button>
+        </div>
+        <p class="periode">
             Période :
             <c:choose>
                 <c:when test="${fiche.mois == 1}">Janvier</c:when>
@@ -431,7 +453,7 @@
             ${fiche.annee}
         </p>
         <p class="periode">Date de génération :
-            <fmt:formatDate value="${fiche.dateGeneration}" pattern="dd/MM/yyyy" />
+            <fmt:formatDate value="${fiche.dateGeneration}" pattern="dd/MM/yyyy"/>
         </p>
     </div>
 
@@ -494,77 +516,78 @@
             <td>Salaire de base</td>
             <td>
                 <fmt:formatNumber value="${fiche.salaireBase}" minFractionDigits="2"
-                                  maxFractionDigits="2" />
+                                  maxFractionDigits="2"/>
             </td>
         </tr>
         <tr>
             <td>+ Primes et bonus</td>
             <td class="montant-positif">+
                 <fmt:formatNumber value="${fiche.primes}" minFractionDigits="2"
-                                  maxFractionDigits="2" />
+                                  maxFractionDigits="2"/>
             </td>
         </tr>
         <tr>
             <td>- Déductions</td>
             <td class="montant-negatif">-
                 <fmt:formatNumber value="${fiche.deductions}" minFractionDigits="2"
-                                  maxFractionDigits="2" />
+                                  maxFractionDigits="2"/>
             </td>
         </tr>
         <tr class="net-payer">
             <td>NET À PAYER</td>
             <td>
                 <fmt:formatNumber value="${fiche.netAPayer}" minFractionDigits="2"
-                                  maxFractionDigits="2" /> €
+                                  maxFractionDigits="2"/> €
             </td>
         </tr>
         </tbody>
     </table>
 
-   <!-- Informations complémentaires -->
-<div class="info-complementaires">
-    <h3>INFORMATIONS COMPLÉMENTAIRES</h3>
-    
-    <p>
-        <strong>Date d'embauche :</strong> 
-        <fmt:formatDate value="${employer.dateEmbauche}" pattern="dd/MM/yyyy" />
-    </p>
-    
-    <p>
-        <strong>Ancienneté :</strong> 
-        <%
-            models.Employer employer = (models.Employer) request.getAttribute("employer");
-            if (employer != null && employer.getDateEmbauche() != null) {
-                java.util.Date dateEmbauche = employer.getDateEmbauche();
-                java.util.Date today = new java.util.Date();
-                
-                long diffMillis = today.getTime() - dateEmbauche.getTime();
-                long diffDays = diffMillis / (1000 * 60 * 60 * 24);
-                
-                int annees = (int) (diffDays / 365);
-                int mois = (int) ((diffDays % 365) / 30);
-                
-                if (annees > 0) {
-                    out.print(annees + " an" + (annees > 1 ? "s" : ""));
-                    if (mois > 0) {
-                        out.print(" et " + mois + " mois");
+    <!-- Informations complémentaires -->
+    <div class="info-complementaires">
+        <h3>INFORMATIONS COMPLÉMENTAIRES</h3>
+
+        <p>
+            <strong>Date d'embauche :</strong>
+            <fmt:formatDate value="${employer.dateEmbauche}" pattern="dd/MM/yyyy"/>
+        </p>
+
+        <p>
+            <strong>Ancienneté :</strong>
+            <%
+                models.Employer employer = (models.Employer) request.getAttribute("employer");
+                if (employer != null && employer.getDateEmbauche() != null) {
+                    java.util.Date dateEmbauche = employer.getDateEmbauche();
+                    java.util.Date today = new java.util.Date();
+
+                    long diffMillis = today.getTime() - dateEmbauche.getTime();
+                    long diffDays = diffMillis / (1000 * 60 * 60 * 24);
+
+                    int annees = (int) (diffDays / 365);
+                    int mois = (int) ((diffDays % 365) / 30);
+
+                    if (annees > 0) {
+                        out.print(annees + " an" + (annees > 1 ? "s" : ""));
+                        if (mois > 0) {
+                            out.print(" et " + mois + " mois");
+                        }
+                    } else if (mois > 0) {
+                        out.print(mois + " mois");
+                    } else {
+                        out.print("Moins d'un mois");
                     }
-                } else if (mois > 0) {
-                    out.print(mois + " mois");
                 } else {
-                    out.print("Moins d'un mois");
+                    out.print("Non disponible");
                 }
-            } else {
-                out.print("Non disponible");
-            }
-        %>
-    </p>
-    
-    <p>
-        <strong>Salaire de base mensuel :</strong> 
-        <fmt:formatNumber value="${employer.salaireBase}" type="number" minFractionDigits="2" maxFractionDigits="2" /> €
-    </p>
-</div>
+            %>
+        </p>
+
+        <p>
+            <strong>Salaire de base mensuel :</strong>
+            <fmt:formatNumber value="${employer.salaireBase}" type="number" minFractionDigits="2"
+                              maxFractionDigits="2"/> €
+        </p>
+    </div>
 
     <!-- Section Absences -->
     <c:if test="${not empty absencesMois}">
@@ -584,10 +607,10 @@
                 <c:forEach var="abs" items="${absencesMois}">
                     <tr>
                         <td>
-                            <fmt:formatDate value="${abs.dateDebut}" pattern="dd/MM/yyyy" />
+                            <fmt:formatDate value="${abs.dateDebut}" pattern="dd/MM/yyyy"/>
                         </td>
                         <td>
-                            <fmt:formatDate value="${abs.dateFin}" pattern="dd/MM/yyyy" />
+                            <fmt:formatDate value="${abs.dateFin}" pattern="dd/MM/yyyy"/>
                         </td>
                         <td>
                             <c:choose>
@@ -637,7 +660,7 @@
         Ce document est confidentiel et destiné uniquement à son bénéficiaire.<br>
         CY-RH - Système de Gestion des Ressources Humaines<br>
         Fiche générée le
-        <fmt:formatDate value="${fiche.dateGeneration}" pattern="dd/MM/yyyy 'à' HH:mm" />
+        <fmt:formatDate value="${fiche.dateGeneration}" pattern="dd/MM/yyyy 'à' HH:mm"/>
     </div>
 </div>
 </body>

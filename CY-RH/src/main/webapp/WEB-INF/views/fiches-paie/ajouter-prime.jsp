@@ -197,7 +197,7 @@
             ${fiche.annee}
         </p>
         <p><strong>Salaire de base :</strong>
-            <fmt:formatNumber value="${fiche.salaireBase}" pattern="#,##0.00" /> €
+            <fmt:formatNumber value="${fiche.salaireBase}" pattern="#,##0.00"/> €
         </p>
     </div>
 

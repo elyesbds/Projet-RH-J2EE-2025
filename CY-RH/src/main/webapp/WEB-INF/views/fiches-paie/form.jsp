@@ -283,7 +283,8 @@
                             </c:forEach>
                         </select>
                         <div class="help-text">Sélectionnez l'employé pour qui vous créez la fiche
-                            de paie</div>
+                            de paie
+                        </div>
                     </div>
 
                     <input type="hidden" name="salaireBase" id="salaireBaseHidden"
@@ -314,29 +315,41 @@
                     <select name="mois" id="mois" class="form-control" required>
                         <option value="">-- Sélectionner --</option>
                         <option value="1" ${(fiche !=null && fiche.mois==1) || (fiche==null &&
-                                param.mois=='1' ) ? 'selected' : '' }>Janvier</option>
+                                param.mois=='1' ) ? 'selected' : '' }>Janvier
+                        </option>
                         <option value="2" ${(fiche !=null && fiche.mois==2) || (fiche==null &&
-                                param.mois=='2' ) ? 'selected' : '' }>Février</option>
+                                param.mois=='2' ) ? 'selected' : '' }>Février
+                        </option>
                         <option value="3" ${(fiche !=null && fiche.mois==3) || (fiche==null &&
-                                param.mois=='3' ) ? 'selected' : '' }>Mars</option>
+                                param.mois=='3' ) ? 'selected' : '' }>Mars
+                        </option>
                         <option value="4" ${(fiche !=null && fiche.mois==4) || (fiche==null &&
-                                param.mois=='4' ) ? 'selected' : '' }>Avril</option>
+                                param.mois=='4' ) ? 'selected' : '' }>Avril
+                        </option>
                         <option value="5" ${(fiche !=null && fiche.mois==5) || (fiche==null &&
-                                param.mois=='5' ) ? 'selected' : '' }>Mai</option>
+                                param.mois=='5' ) ? 'selected' : '' }>Mai
+                        </option>
                         <option value="6" ${(fiche !=null && fiche.mois==6) || (fiche==null &&
-                                param.mois=='6' ) ? 'selected' : '' }>Juin</option>
+                                param.mois=='6' ) ? 'selected' : '' }>Juin
+                        </option>
                         <option value="7" ${(fiche !=null && fiche.mois==7) || (fiche==null &&
-                                param.mois=='7' ) ? 'selected' : '' }>Juillet</option>
+                                param.mois=='7' ) ? 'selected' : '' }>Juillet
+                        </option>
                         <option value="8" ${(fiche !=null && fiche.mois==8) || (fiche==null &&
-                                param.mois=='8' ) ? 'selected' : '' }>Août</option>
+                                param.mois=='8' ) ? 'selected' : '' }>Août
+                        </option>
                         <option value="9" ${(fiche !=null && fiche.mois==9) || (fiche==null &&
-                                param.mois=='9' ) ? 'selected' : '' }>Septembre</option>
+                                param.mois=='9' ) ? 'selected' : '' }>Septembre
+                        </option>
                         <option value="10" ${(fiche !=null && fiche.mois==10) || (fiche==null &&
-                                param.mois=='10' ) ? 'selected' : '' }>Octobre</option>
+                                param.mois=='10' ) ? 'selected' : '' }>Octobre
+                        </option>
                         <option value="11" ${(fiche !=null && fiche.mois==11) || (fiche==null &&
-                                param.mois=='11' ) ? 'selected' : '' }>Novembre</option>
+                                param.mois=='11' ) ? 'selected' : '' }>Novembre
+                        </option>
                         <option value="12" ${(fiche !=null && fiche.mois==12) || (fiche==null &&
-                                param.mois=='12' ) ? 'selected' : '' }>Décembre</option>
+                                param.mois=='12' ) ? 'selected' : '' }>Décembre
+                        </option>
                     </select>
                 </div>
 
@@ -356,7 +369,8 @@
                            step="0.01" min="0" value="${fiche.salaireBase}" required
                            oninput="updateSalaireBaseModif()">
                     <div class="help-text" style="color: #ff9800;">Seul l'ADMIN peut modifier le
-                        salaire de base</div>
+                        salaire de base
+                    </div>
                 </div>
             </c:if>
 

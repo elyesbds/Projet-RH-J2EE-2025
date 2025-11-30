@@ -5,13 +5,14 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 import utils.HibernateUtil;
+
 import java.util.List;
 
 /**
  * DAO pour gérer les affectations employés-projets
  */
 public class AffectationProjetDAO {
-    
+
     /**
      * Créer une nouvelle affectation
      */
@@ -30,7 +31,7 @@ public class AffectationProjetDAO {
             return false;
         }
     }
-    
+
     /**
      * Récupérer les projets d'un employé
      */
@@ -45,7 +46,7 @@ public class AffectationProjetDAO {
             return null;
         }
     }
-    
+
     /**
      * Récupérer les employés d'un projet
      */
@@ -60,7 +61,7 @@ public class AffectationProjetDAO {
             return null;
         }
     }
-    
+
     /**
      * Terminer une affectation (mettre une date de fin)
      */
@@ -84,7 +85,7 @@ public class AffectationProjetDAO {
             return false;
         }
     }
-    
+
     /**
      * Vérifier si un employé est déjà affecté à un projet
      */
@@ -100,7 +101,7 @@ public class AffectationProjetDAO {
             return false;
         }
     }
-    
+
     /**
      * Supprimer une affectation
      */

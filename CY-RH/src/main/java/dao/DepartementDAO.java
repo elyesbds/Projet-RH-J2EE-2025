@@ -5,13 +5,14 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 import utils.HibernateUtil;
+
 import java.util.List;
 
 /**
  * DAO pour gérer les opérations CRUD sur les départements
  */
 public class DepartementDAO {
-    
+
     /**
      * Créer un nouveau département
      */
@@ -37,7 +38,7 @@ public class DepartementDAO {
             return false;
         }
     }
-    
+
     /**
      * Récupérer un département par son ID
      */
@@ -49,7 +50,7 @@ public class DepartementDAO {
             return null;
         }
     }
-    
+
     /**
      * Récupérer tous les départements
      */
@@ -61,7 +62,7 @@ public class DepartementDAO {
             return null;
         }
     }
-    
+
     /**
      * Mettre à jour un département
      */
@@ -87,7 +88,7 @@ public class DepartementDAO {
             return false;
         }
     }
-    
+
     /**
      * Supprimer un département
      */
@@ -110,7 +111,7 @@ public class DepartementDAO {
             return false;
         }
     }
-    
+
     /**
      * Récupérer un département par son intitulé
      */
@@ -125,7 +126,7 @@ public class DepartementDAO {
             return null;
         }
     }
-    
+
     /**
      * Récupérer les employés sans département
      */
@@ -138,7 +139,7 @@ public class DepartementDAO {
             return null;
         }
     }
-    
+
     /**
      * Vérifier si un employé est déjà chef d'un autre département
      */
@@ -153,6 +154,6 @@ public class DepartementDAO {
             return null;
         }
     }
-    
-    
+
+
 }
