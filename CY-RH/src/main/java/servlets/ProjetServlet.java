@@ -19,6 +19,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import utils.ValidationUtil;
 import java.text.ParseException;
+import java.util.Set;
+import java.util.HashSet;
 
 /**
  * Servlet pour gérer les projets
@@ -123,36 +125,55 @@ public class ProjetServlet extends HttpServlet {
             }
         }
 
-        // Chef de projet : voit ses projets (chef) + projets où il est membre
+     // Chef de projet : voit ses projets (chef) + projets où il est membre
         else if ("CHEF_PROJET".equals(currentUser.getRole())) {
             Integer userId = currentUser.getId();
 
+            // Set pour stocker les IDs déjà ajoutés (évite les doublons)
+            Set<Integer> projetsIds = new HashSet<>();
+            projets = new ArrayList<>();
+
             // 1. Projets où il est chef
             List<Projet> projetsChef = projetDAO.getByChefProjet(userId);
-            projets = new ArrayList<>(projetsChef != null ? projetsChef : new ArrayList<>());
+            if (projetsChef != null) {
+                for (Projet p : projetsChef) {
+                    if (p != null && !projetsIds.contains(p.getId())) {
+                        projets.add(p);
+                        projetsIds.add(p.getId());
+                    }
+                }
+            }
 
             // 2. Projets où il est membre (affecté)
             List<AffectationProjet> affectations = affectationDAO.getProjetsByEmployer(userId);
             if (affectations != null) {
                 for (AffectationProjet aff : affectations) {
                     Projet p = projetDAO.getById(aff.getIdProjet());
-                    // Ajouter seulement si pas déjà dans la liste
-                    if (p != null && !projets.contains(p)) {
+                    // Ajouter seulement si l'ID n'est pas déjà dans le Set
+                    if (p != null && !projetsIds.contains(p.getId())) {
                         projets.add(p);
+                        projetsIds.add(p.getId());
                     }
                 }
             }
         }
-        // Chef de département : voit les projets de son département + projets où il est
-        // membre
+        
+     // Chef de département : voit les projets de son département + projets où il est membre
         else if ("CHEF_DEPT".equals(currentUser.getRole())) {
+            // Set pour stocker les IDs déjà ajoutés (évite les doublons)
+            Set<Integer> projetsIds = new HashSet<>();
             projets = new ArrayList<>();
 
             // 1. Projets du département
             if (currentUser.getIdDepartement() != null) {
                 List<Projet> projetsDept = projetDAO.getByDepartement(currentUser.getIdDepartement());
                 if (projetsDept != null) {
-                    projets.addAll(projetsDept);
+                    for (Projet p : projetsDept) {
+                        if (p != null && !projetsIds.contains(p.getId())) {
+                            projets.add(p);
+                            projetsIds.add(p.getId());
+                        }
+                    }
                 }
             }
 
@@ -161,19 +182,23 @@ public class ProjetServlet extends HttpServlet {
             if (affectations != null) {
                 for (AffectationProjet aff : affectations) {
                     Projet p = projetDAO.getById(aff.getIdProjet());
-                    if (p != null && !projets.contains(p)) {
+                    if (p != null && !projetsIds.contains(p.getId())) {
                         projets.add(p);
+                        projetsIds.add(p.getId());
                     }
                 }
             }
         }
-
-        projets = projetDAO.getAll();
+        
+        // Admin : voit TOUS les projets
+        else {
+            projets = projetDAO.getAll();
+        }
 
         // Récupérer les noms des chefs de projet
         Map<Integer, String> chefsProjetMap = new HashMap<>();
 
-        // AJOUT : Récupérer les noms des départements
+        // Récupérer les noms des départements
         Map<Integer, String> departementsMap = new HashMap<>();
 
         if (projets != null) {
@@ -214,7 +239,6 @@ public class ProjetServlet extends HttpServlet {
                             break;
 
                         case "chefProjet":
-                            // Tri par ID du chef de projet
                             Integer chef1 = p1.getChefProjet();
                             Integer chef2 = p2.getChefProjet();
                             if (chef1 == null && chef2 == null)
@@ -228,7 +252,6 @@ public class ProjetServlet extends HttpServlet {
                             break;
 
                         case "idDepartement":
-                            // Tri par ID du département
                             Integer dept1 = p1.getIdDepartement();
                             Integer dept2 = p2.getIdDepartement();
                             if (dept1 == null && dept2 == null)
@@ -278,13 +301,11 @@ public class ProjetServlet extends HttpServlet {
 
         request.setAttribute("sortBy", sortBy);
         request.setAttribute("order", order);
-
         request.setAttribute("projets", projets);
         request.setAttribute("chefsProjetMap", chefsProjetMap);
-        request.setAttribute("departementsMap", departementsMap); // AJOUT
+        request.setAttribute("departementsMap", departementsMap);
 
-        // Indiquer si l'utilisateur peut créer des projets (Admin OU Chef de
-        // département)
+        // Indiquer si l'utilisateur peut créer des projets (Admin OU Chef de département)
         boolean canCreateProjet = PermissionUtil.isAdmin(request) || PermissionUtil.isChefDept(request);
         request.setAttribute("canCreateProjet", canCreateProjet);
 
@@ -628,6 +649,11 @@ public class ProjetServlet extends HttpServlet {
      * Chef de projet : peut modifier SEULEMENT certains champs (état, date fin
      * prévue, date fin réelle)
      */
+    /**
+     * Mettre à jour un projet
+     * Admin : peut tout modifier
+     * Chef de projet : peut modifier SEULEMENT certains champs (état, date fin prévue, date fin réelle)
+     */
     private void updateProjet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
@@ -908,6 +934,32 @@ public class ProjetServlet extends HttpServlet {
 
             // VÉRIFICATIONS DE COHÉRENCE DÉPARTEMENT/CHEF (ADMIN)
             if (isAdmin) {
+            	
+                // CAS 0 : Ajout simultané de département ET de chef (si le projet n'a ni l'un ni l'autre)
+                if (deptStr != null && !deptStr.trim().isEmpty() && 
+                    chefStr != null && !chefStr.trim().isEmpty() &&
+                    projet.getIdDepartement() == null && projet.getChefProjet() == null) {
+                    
+                    int nouveauDeptId = Integer.parseInt(deptStr);
+                    int nouveauChefId = Integer.parseInt(chefStr);
+                    
+                    Employer chefCandidat = employerDAO.getById(nouveauChefId);
+                    
+                    if (chefCandidat != null && chefCandidat.getIdDepartement() != null) {
+                        if (!chefCandidat.getIdDepartement().equals(nouveauDeptId)) {
+                            Departement deptChef = departementDAO.getById(chefCandidat.getIdDepartement());
+                            Departement nouveauDept = departementDAO.getById(nouveauDeptId);
+                            erreurs.add("Le chef de projet \"" + chefCandidat.getPrenom() + " " + chefCandidat.getNom() +
+                                    "\" appartient au département \"" + deptChef.getIntitule() +
+                                    "\" mais vous voulez rattacher le projet au département \"" + nouveauDept.getIntitule() + "\".");
+                            request.setAttribute("erreurs", erreurs);
+                            request.setAttribute("projet", projet);
+                            showEditForm(request, response);
+                            return;
+                        }
+                    }
+                }
+                
                 // CAS 1 : Changement de département
                 if (deptStr != null && !deptStr.trim().isEmpty() && projet.getChefProjet() != null) {
                     int nouveauDeptId = Integer.parseInt(deptStr);
@@ -1042,8 +1094,7 @@ public class ProjetServlet extends HttpServlet {
 
                         if (autresProjets != null) {
                             for (Projet p : autresProjets) {
-                                // Exclure le projet actuel ET vérifier qu'il est actif (EN_COURS ou
-                                // PAS_COMMENCE)
+                                // Exclure le projet actuel ET vérifier qu'il est actif (EN_COURS ou PAS_COMMENCE)
                                 if (!p.getId().equals(projet.getId()) &&
                                         ("EN_COURS".equals(p.getEtatProjet())
                                                 || "PAS_COMMENCE".equals(p.getEtatProjet()))) {
@@ -1127,8 +1178,12 @@ public class ProjetServlet extends HttpServlet {
                     }
                 }
 
+                // CORRECTION : Gestion du département (avec support pour "Aucun")
                 if (deptStr != null && !deptStr.trim().isEmpty()) {
                     projet.setIdDepartement(Integer.parseInt(deptStr));
+                } else {
+                    // Si deptStr est vide, mettre le département à null
+                    projet.setIdDepartement(null);
                 }
             } else if (isChefProjet) {
                 if (nouvelEtat != null && !nouvelEtat.trim().isEmpty()) {
@@ -1252,17 +1307,16 @@ public class ProjetServlet extends HttpServlet {
                 request.getSession().setAttribute("successMessage", "Projet mis à jour avec succès");
                 response.sendRedirect(request.getContextPath() + "/projets");
             } else {
-                erreurs.add("Erreur lors de la mise à jour (doublon possible)");
-                request.setAttribute("erreurs", erreurs);
-                showEditForm(request, response);
-            }
-
-        } catch (Exception e) {
-            List<String> erreurs = new ArrayList<>();
-            erreurs.add("Erreur : " + e.getMessage());
-            request.setAttribute("erreurs", erreurs);
-            showEditForm(request, response);
-        }
+                    erreurs.add("Erreur lors de la mise à jour (doublon possible)");
+                    request.setAttribute("erreurs", erreurs);
+                    showEditForm(request, response);
+                }
+    	} catch (Exception e) {
+        List<String> erreurs = new ArrayList<>();
+        erreurs.add("Erreur : " + e.getMessage());
+        request.setAttribute("erreurs", erreurs);
+        showEditForm(request, response);
+    }
     }
 
     /**
@@ -1505,7 +1559,8 @@ public class ProjetServlet extends HttpServlet {
 
     /**
      * Afficher le formulaire d'affectation rapide depuis la liste des employés
-     * Pour les chefs de projet : afficher LEURS projets uniquement
+     * Admin : tous les projets disponibles
+     * Chef de projet : LEURS projets uniquement
      */
     private void showAffectationRapide(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -1514,23 +1569,59 @@ public class ProjetServlet extends HttpServlet {
         Employer employe = employerDAO.getById(employeId);
         Employer currentUser = PermissionUtil.getLoggedUser(request);
 
-        // Vérifier que l'utilisateur est chef de projet
-        if (currentUser == null || !"CHEF_PROJET".equals(currentUser.getRole())) {
+        boolean isAdmin = PermissionUtil.isAdmin(request);
+        boolean isChefProjet = currentUser != null && "CHEF_PROJET".equals(currentUser.getRole());
+
+        // Vérifier les permissions
+        if (!isAdmin && !isChefProjet) {
             response.sendRedirect(request.getContextPath() + "/employees");
             return;
         }
 
-        // Récupérer UNIQUEMENT les projets où l'utilisateur est chef
-        List<Projet> mesProjets = projetDAO.getByChefProjet(currentUser.getId());
-
-        // Filtrer : UNIQUEMENT projets EN_COURS + employé non affecté
         List<Projet> projetsDisponibles = new ArrayList<>();
-        if (mesProjets != null) {
-            for (Projet projet : mesProjets) {
-                // Vérifier : EN_COURS + pas déjà affecté
-                if ("EN_COURS".equals(projet.getEtatProjet()) &&
-                        !affectationDAO.isEmployerAffected(employeId, projet.getId())) {
-                    projetsDisponibles.add(projet);
+
+        if (isAdmin) {
+            // ADMIN : tous les projets disponibles
+            List<Projet> tousProjets = projetDAO.getAll();
+            
+            if (tousProjets != null) {
+                for (Projet projet : tousProjets) {
+                    // Filtrer : (EN_COURS ou PAS_COMMENCE) + pas déjà affecté + cohérence département
+                    if (("EN_COURS".equals(projet.getEtatProjet()) || "PAS_COMMENCE".equals(projet.getEtatProjet())) &&
+                            !affectationDAO.isEmployerAffected(employeId, projet.getId())) {
+                        
+                        // Cohérence département
+                        if (projet.getIdDepartement() == null) {
+                            // Projet transversal : tout le monde peut être affecté
+                            projetsDisponibles.add(projet);
+                        } else if (employe.getIdDepartement() != null && 
+                                   employe.getIdDepartement().equals(projet.getIdDepartement())) {
+                            // Projet départemental : seulement si même département
+                            projetsDisponibles.add(projet);
+                        }
+                    }
+                }
+            }
+        } else {
+            // CHEF DE PROJET : uniquement ses projets
+            List<Projet> mesProjets = projetDAO.getByChefProjet(currentUser.getId());
+            
+            if (mesProjets != null) {
+                for (Projet projet : mesProjets) {
+                    // Filtrer : (EN_COURS ou PAS_COMMENCE) + pas déjà affecté + cohérence département
+                    if (("EN_COURS".equals(projet.getEtatProjet()) || "PAS_COMMENCE".equals(projet.getEtatProjet())) &&
+                            !affectationDAO.isEmployerAffected(employeId, projet.getId())) {
+                        
+                        // Cohérence département
+                        if (projet.getIdDepartement() == null) {
+                            // Projet transversal : tout le monde peut être affecté
+                            projetsDisponibles.add(projet);
+                        } else if (employe.getIdDepartement() != null && 
+                                   employe.getIdDepartement().equals(projet.getIdDepartement())) {
+                            // Projet départemental : seulement si même département
+                            projetsDisponibles.add(projet);
+                        }
+                    }
                 }
             }
         }

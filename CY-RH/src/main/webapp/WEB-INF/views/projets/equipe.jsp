@@ -158,16 +158,32 @@
                                                     </td>
 
                                                     <!-- Colonne Actions : visible uniquement si canModify + PROJET EN_COURS -->
-                                                    <c:if
-                                                        test="${canModify && (projet.etatProjet == 'PAS_COMMENCE' || projet.etatProjet == 'EN_COURS')}">
-                                                        <td class="actions">
-                                                            <a href="${pageContext.request.contextPath}/projets/retirerEmploye?affectationId=${aff.id}&projetId=${projet.id}"
-                                                                class="btn-delete"
-                                                                onclick="return confirm('Retirer cet employé du projet ?')">
-                                                                Retirer
-                                                            </a>
-                                                        </td>
-                                                    </c:if>
+													<c:if test="${canModify && (projet.etatProjet == 'PAS_COMMENCE' || projet.etatProjet == 'EN_COURS')}">
+													    <td class="actions">
+													        <c:choose>
+													            <c:when test="${employe.id == projet.chefProjet && sessionScope.userRole != 'ADMIN'}">
+													                <!-- Chef de projet : ne peut pas se retirer lui-même (sauf si admin) -->
+													                <em style="color: #999;">Vous êtes le chef</em>
+													            </c:when>
+													            <c:when test="${employe.id == projet.chefProjet && sessionScope.userRole == 'ADMIN'}">
+													                <!-- Admin : peut retirer le chef avec confirmation spéciale -->
+													                <a href="${pageContext.request.contextPath}/projets/retirerEmploye?affectationId=${aff.id}&projetId=${projet.id}"
+													                    class="btn-delete"
+													                    onclick="return confirm('ATTENTION : Vous allez retirer le chef de projet !\n\n${employe.prenom} ${employe.nom} perdra son statut de chef.\n\nConfirmer ?')">
+													                    Retirer le chef
+													                </a>
+													            </c:when>
+													            <c:otherwise>
+													                <!-- Membre normal : bouton standard -->
+													                <a href="${pageContext.request.contextPath}/projets/retirerEmploye?affectationId=${aff.id}&projetId=${projet.id}"
+													                    class="btn-delete"
+													                    onclick="return confirm('Retirer cet employé du projet ?')">
+													                    Retirer
+													                </a>
+													            </c:otherwise>
+													        </c:choose>
+													    </td>
+													</c:if>
                                                 </tr>
                                             </c:forEach>
                                         </c:otherwise>

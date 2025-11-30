@@ -63,12 +63,12 @@
                         <small>Sélectionnez un employé comme responsable du département</small>
                     </c:when>
                     <c:otherwise>
-                        <input type="text"
-                               value="${departement.chefDepartement != null ? departement.chefDepartement.prenom.concat(' ').concat(departement.chefDepartement.nom) : 'Non défini'}"
-                               disabled
-                               style="background: #f0f0f0; cursor: not-allowed;">
-                        <small>Seul l'administrateur peut modifier le chef de département</small>
-                    </c:otherwise>
+					    <input type="text"
+					           value="${departement.chefDepartement != null ? departement.chefDepartement.prenom.concat(' ').concat(departement.chefDepartement.nom) : 'Non défini'}"
+					           disabled
+					           style="background-color: #f5f5f5; cursor: not-allowed; color: #333;">
+					    <small>Seul l'administrateur peut modifier le chef de département</small>
+					</c:otherwise>
                 </c:choose>
             </div>
 

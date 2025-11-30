@@ -391,15 +391,28 @@
         <h2>FICHE DE PAIE</h2>
         
         <!-- Boutons d'action -->
-<div style="text-align: center; margin: 20px 0;">
-    <button onclick="window.history.back()" style="background: #95a5a6; color: white; padding: 12px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; margin-right: 10px;">
-        ← Retour à la liste
-    </button>
-    <button onclick="window.print()" style="background: #d4af37; color: #1a1a1a; padding: 12px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; font-weight: bold;">
-        🖨 Imprimer
-    </button>
-</div>
-        <p class="periode">
+		<div style="text-align: center; margin: 20px 0;">
+		    <c:choose>
+		        <c:when test="${param.from == 'mon-compte'}">
+		            <button onclick="window.location.href='${pageContext.request.contextPath}/mon-compte'" 
+		                    style="background: #95a5a6; color: white; padding: 12px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; margin-right: 10px;">
+		                ← Retour à Mon Compte
+		            </button>
+		        </c:when>
+		        <c:otherwise>
+		            <button onclick="window.location.href='${pageContext.request.contextPath}/fiches-paie'" 
+		                    style="background: #95a5a6; color: white; padding: 12px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; margin-right: 10px;">
+		                ← Retour à la liste
+		            </button>
+		        </c:otherwise>
+		    </c:choose>
+		    
+		    <button onclick="window.print()" 
+		            style="background: #d4af37; color: #1a1a1a; padding: 12px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; font-weight: bold;">
+		        🖨 Imprimer
+		    </button>
+		</div>
+		   <p class="periode">
             Période :
             <c:choose>
                 <c:when test="${fiche.mois == 1}">Janvier</c:when>

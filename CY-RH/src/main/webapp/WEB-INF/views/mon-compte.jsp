@@ -349,13 +349,14 @@
                                                 pattern="dd/MM/yyyy" />
                             </td>
 
-                            <!-- Action : Bouton Imprimer -->
-                            <td>
-                                <a href="${pageContext.request.contextPath}/fiches-paie/imprimer?id=${fiche.id}"
-                                   class="btn-print" title="Imprimer cette fiche">
-                                    Imprimer
-                                </a>
-                            </td>
+						<!-- Action : Bouton Imprimer -->
+						<td>
+						    <a href="${pageContext.request.contextPath}/fiches-paie/voir?id=${fiche.id}&from=mon-compte"
+						       class="btn-print" 
+						       title="Voir et imprimer cette fiche">
+						        Imprimer
+						    </a>
+						</td>
                         </tr>
                     </c:forEach>
                     </tbody>

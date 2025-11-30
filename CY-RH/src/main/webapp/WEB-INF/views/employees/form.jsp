@@ -8,6 +8,13 @@
     <meta charset="UTF-8">
     <title>${employee != null ? 'Modifier' : 'Ajouter'} un Employé - CY-RH</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css?v=1.0">
+                    <style>
+                    /* Icônes de calendrier en doré */
+                    input[type="date"]::-webkit-calendar-picker-indicator {
+                        filter: brightness(0) saturate(100%) invert(71%) sepia(45%) saturate(653%) hue-rotate(3deg) brightness(92%) contrast(87%);
+                        cursor: pointer;
+                    }
+                </style>
 </head>
 
 <body>

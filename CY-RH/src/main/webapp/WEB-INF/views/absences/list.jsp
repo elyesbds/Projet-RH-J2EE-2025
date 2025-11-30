@@ -22,33 +22,35 @@
                         </c:if>
 
                         <!-- Section de filtres -->
-                        <div class="search-section">
-                            <h2>Filtrer les absences</h2>
-                            <form method="get" action="${pageContext.request.contextPath}/absences/search">
-                                <select name="idEmployer">
-                                    <option value="">-- Tous les employés --</option>
-                                    <c:forEach var="entry" items="${employersMap}">
-                                        <option value="${entry.key}" ${param.idEmployer==entry.key ? 'selected' : '' }>
-                                            ${entry.value}
-                                        </option>
-                                    </c:forEach>
-                                </select>
-
-                                <select name="typeAbsence">
-                                    <option value="">-- Tous les types --</option>
-                                    <option value="CONGE" ${param.typeAbsence=='CONGE' ? 'selected' : '' }>Congé
-                                    </option>
-                                    <option value="MALADIE" ${param.typeAbsence=='MALADIE' ? 'selected' : '' }>Maladie
-                                    </option>
-                                    <option value="ABSENCE_INJUSTIFIEE" ${param.typeAbsence=='ABSENCE_INJUSTIFIEE'
-                                        ? 'selected' : '' }>Absence injustifiée</option>
-                                </select>
-
-                                <button type="submit" class="btn btn-primary">Filtrer</button>
-                                <a href="${pageContext.request.contextPath}/absences"
-                                    class="btn btn-secondary">Réinitialiser</a>
-                            </form>
-                        </div>
+						<div class="search-section">
+						    <h2>Filtrer les absences</h2>
+						    <form method="get" action="${pageContext.request.contextPath}/absences/search">
+						        <!-- Recherche par employé : UNIQUEMENT pour ADMIN -->
+						        <c:if test="${sessionScope.user.role == 'ADMIN'}">
+						            <select name="idEmployer">
+						                <option value="">-- Tous les employés --</option>
+						                <c:forEach var="entry" items="${employersMap}">
+						                    <option value="${entry.key}" ${param.idEmployer==entry.key ? 'selected' : '' }>
+						                        ${entry.value}
+						                    </option>
+						                </c:forEach>
+						            </select>
+						        </c:if>
+						
+						        <!-- Recherche par type : POUR TOUT LE MONDE -->
+						        <select name="typeAbsence">
+						            <option value="">-- Tous les types --</option>
+						            <option value="CONGE" ${param.typeAbsence=='CONGE' ? 'selected' : '' }>Congé</option>
+						            <option value="MALADIE" ${param.typeAbsence=='MALADIE' ? 'selected' : '' }>Maladie</option>
+						            <option value="ABSENCE_INJUSTIFIEE" ${param.typeAbsence=='ABSENCE_INJUSTIFIEE' ? 'selected' : '' }>
+						                Absence injustifiée
+						            </option>
+						        </select>
+						
+						        <button type="submit" class="btn btn-primary">Filtrer</button>
+						        <a href="${pageContext.request.contextPath}/absences" class="btn btn-secondary">Réinitialiser</a>
+						    </form>
+						</div>
 
                         <!-- Bouton Ajouter (Admin uniquement) -->
                         <c:if test="${canModify}">

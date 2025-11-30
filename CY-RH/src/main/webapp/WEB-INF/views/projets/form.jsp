@@ -79,7 +79,7 @@
                                     <c:when test="${isChefProjet && projet != null}">
                                         <!-- Chef de projet : lecture seule -->
                                         <input type="text" id="nomProjet" name="nomProjet" value="${projet.nomProjet}"
-                                            readonly style="background-color: #f5f5f5; cursor: not-allowed;">
+    										readonly style="background-color: #f5f5f5; cursor: not-allowed; color: #333;">
                                         <small style="color: #666;">Seul l'administrateur peut modifier le nom du
                                             projet</small>
                                     </c:when>
@@ -129,7 +129,7 @@
                                             <c:when test="${isChefProjet && projet != null}">
                                                 <!-- Chef de projet : lecture seule -->
                                                 <select id="chefProjet" name="chefProjet" disabled
-                                                    style="background-color: #f5f5f5; cursor: not-allowed;">
+    												style="background-color: #f5f5f5; cursor: not-allowed; color: #333;">
                                                     <option value="">-- Aucun --</option>
                                                     <c:forEach var="emp" items="${employees}">
                                                         <option value="${emp.id}" ${projet !=null &&
@@ -197,8 +197,8 @@
                                         <c:when test="${(isChefProjet || isChefDept) && projet != null}">
                                             <!-- Chef de projet : lecture seule -->
                                             <input type="date" id="dateDebut" name="dateDebut"
-                                                value="<fmt:formatDate value='${projet.dateDebut}' pattern='yyyy-MM-dd'/>"
-                                                readonly style="background-color: #f5f5f5; cursor: not-allowed;">
+   												 value="<fmt:formatDate value='${projet.dateDebut}' pattern='yyyy-MM-dd'/>"
+    												readonly style="background-color: #f5f5f5; cursor: not-allowed; color: #333;">
                                             <small style="color: #666;">Seul l'administrateur peut modifier la date de
                                                 début</small>
                                         </c:when>
@@ -235,7 +235,7 @@
                                             <c:when test="${isChefProjet || isChefDept}">
                                                 <!-- Chef de projet OU Chef de département : lecture seule -->
                                                 <select id="idDepartement" name="idDepartement" disabled
-                                                    style="background-color: #f5f5f5; cursor: not-allowed;">
+    												style="background-color: #f5f5f5; cursor: not-allowed; color: #333;">
                                                     <option value="">-- Aucun --</option>
                                                     <c:forEach var="dept" items="${departements}">
                                                         <option value="${dept.id}" ${projet !=null &&
